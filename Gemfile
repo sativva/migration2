@@ -10,7 +10,7 @@ gem 'redis'
 
 # gem 'bootstrap', '~> 4.3.1'
 # gem 'bootstrap-sass', '~> 3.3'
-
+gem 'nokogiri'
 gem 'autoprefixer-rails'
 gem 'font-awesome-sass', '~> 5.6.1'
 gem 'sassc-rails'
@@ -23,6 +23,8 @@ gem 'rack-cors', require: 'rack/cors'
 
 group :development do
   gem 'web-console', '>= 3.3.0'
+  gem 'faker', :git => 'https://github.com/faker-ruby/faker.git', :branch => 'master'
+
 end
 
 group :development, :test do
