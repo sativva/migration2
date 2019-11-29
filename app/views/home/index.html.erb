@@ -5,8 +5,12 @@
 <!-- <div id="app"></div> -->
 
 <%= link_to 'Destroy all orders', destroy_all_order_path, remote: true %>
+<%= link_to 'Destroy all customers', destroy_all_customers_path, remote: true %>
+
 <%= link_to 'Create some orders', create_sample_orders_path, remote: true %>
 <%= link_to 'Import Orders', import_orders_path, remote: true  %>
+<%= link_to 'Import customers', import_customers_path, remote: true  %>
+
 
 <ul>
   <% @products.each do |product| %>

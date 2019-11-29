@@ -5,6 +5,8 @@
       get 'destroy_all_order', to: 'home#destroy_orders'
       get 'create_sample_orders', to: 'home#create_sample_orders'
       get 'import_orders', to: 'home#import_orders'
+      get 'import_customers', to: 'home#import_customers'
+      get 'destroy_all_customers', to: 'home#destroy_customers'
 
 
       namespace :api, defaults: { format: :json } do
