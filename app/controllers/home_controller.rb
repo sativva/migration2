@@ -1,4 +1,4 @@
-  # frozen_string_literal: true
+0  # frozen_string_literal: true
 
   class HomeController < ShopifyApp::AuthenticatedController
     layout "application"
@@ -189,9 +189,9 @@
 
 
     def index
-      @products = ShopifyAPI::Product.find(:all, params: { limit: 10 })
-      @customers = ShopifyAPI::Customer.find(:all, params: { limit: 10 })
-      @orders = ShopifyAPI::Order.find(:all, params: { limit: 10 })
+      @products = ShopifyAPI::Product.find(:all, params: { limit: 100 })
+      @customers = ShopifyAPI::Customer.find(:all, params: { limit: 100 })
+      @orders = ShopifyAPI::Order.find(:all, params: { limit: 100 })
       @webhooks = ShopifyAPI::Webhook.find(:all)
     end
 

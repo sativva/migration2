@@ -1,40 +1,68 @@
-<h2>Products</h2>
 
 <%= javascript_pack_tag 'hello_react' %>
 
 <!-- <div id="app"></div> -->
 
-<%= link_to 'Destroy all orders', destroy_all_order_path, remote: true %>
-<%= link_to 'Create some orders', create_sample_orders_path, remote: true %>
-<%= link_to 'Import Orders', import_orders_path, remote: true  %>
+<div class="container">
 
-<ul>
-  <% @products.each do |product| %>
-    <li><%= link_to product.title, "https://#{@shop_session.domain}/admin/products/#{product.id}", target: "_top" %></li>
-  <% end %>
-</ul>
+  <h1 id="page-title">YOU ARE CONNECTED ON THE STORE : <%= @shop.shopify_domain %></h1>
 
-<ul>
-  <% @customers.each do |customer| %>
-    <li><%= link_to customer.first_name, "https://#{@shop_session.domain}/admin/customer/#{customer.id}", target: "_top" %></li>
-  <% end %>
-</ul>
-<ul>
-  <% @orders.each do |order| %>
-    <li><%= link_to order.name, "https://#{@shop_session.domain}/admin/order/#{order.id}", target: "_top" %></li>
-  <% end %>
-</ul>
-<hr>
+  <div class="actions">
+    <h1>What do you wanna do ?</h1>
+    <button class="btn"><%= link_to 'Destroy all orders', destroy_all_order_path, remote: true %></button>
+    <button class="btn"><%= link_to 'Create some orders', create_sample_orders_path, remote: true %></button>
+    <button class="btn"><%= link_to 'Import Orders', import_orders_path, remote: true  %></button>
+  </div>
 
-<h2>Webhooks</h2>
+  <div class="contents">
 
-<% if @webhooks.present? %>
-  <ul>
-    <% @webhooks.each do |webhook| %>
-      <li><%= webhook.topic %> : <%= webhook.address %></li>
-    <% end %>
-  </ul>
-<% else %>
-  <p>This app has not created any webhooks for this Shop. Add webhooks to your ShopifyApp initializer if you need webhooks</p>
-<% end %>
+    <div class="content">
 
+      <h1>PRODUCTS : <%= @products.size  %></h1>
+
+      <ul>
+        <% @products.each do |product| %>
+          <li><%= link_to product.title, "https://#{@shop_session.domain}/admin/products/#{product.id}", target: "_top" %></li>
+        <% end %>
+      </ul>
+    </div>
+
+    <div class="content">
+
+      <h1>CUSTOMERS : <%= @customers.size  %></h1>
+
+      <ul>
+        <% @customers.each do |customer| %>
+          <li><%= link_to customer.first_name, "https://#{@shop_session.domain}/admin/customer/#{customer.id}", target: "_top" %></li>
+        <% end %>
+      </ul>
+
+    </div>
+
+    <div class="content">
+
+    <h1>ORDERS : <%= @orders.size  %></h1>
+
+      <ul>
+        <% @orders.each do |order| %>
+          <li><%= link_to order.name, "https://#{@shop_session.domain}/admin/order/#{order.id}", target: "_top" %></li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+
+
+      <h1>Webhooks</h1>
+
+      <% if @webhooks.present? %>
+        <ul>
+          <% @webhooks.each do |webhook| %>
+            <li><%= webhook.topic %> : <%= webhook.address %></li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p>This app has not created any webhooks for this Shop. Add webhooks to your ShopifyApp initializer if you need webhooks</p>
+      <% end %>
+
+
+</div>
