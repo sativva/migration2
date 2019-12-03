@@ -3,7 +3,48 @@
 
 <!-- <div id="app"></div> -->
 
+
 <div class="container">
+
+<h1><%= @shop_session.domain %></h1>
+<%= link_to 'Destroy all orders', destroy_all_order_path, remote: true %>
+<%= link_to 'Destroy all customers', destroy_all_customers_path, remote: true %>
+
+<%= link_to 'Create some orders', create_sample_orders_path, remote: true %>
+<%= link_to 'Import Orders', import_orders_path, remote: true  %>
+<%= link_to 'Import customers', import_customers_path, remote: true  %>
+
+
+<ul>
+  <% @products.each do |product| %>
+    <li><%= link_to product.title, "https://#{@shop_session.domain}/admin/products/#{product.id}", target: "_top" %></li>
+  <% end %>
+</ul>
+
+<ul>
+  <% @customers.each do |customer| %>
+    <li><%= link_to customer.first_name, "https://#{@shop_session.domain}/admin/customer/#{customer.id}", target: "_top" %></li>
+  <% end %>
+</ul>
+<ul>
+  <% @orders.each do |order| %>
+    <li><%= link_to order.name, "https://#{@shop_session.domain}/admin/order/#{order.id}", target: "_top" %></li>
+  <% end %>
+</ul>
+<hr>
+
+<h2>Webhooks</h2>
+
+<% if @webhooks.present? %>
+  <ul>
+    <% @webhooks.each do |webhook| %>
+      <li><%= webhook.topic %> : <%= webhook.address %></li>
+    <% end %>
+  </ul>
+<% else %>
+  <p>This app has not created any webhooks for this Shop. Add webhooks to your ShopifyApp initializer if you need webhooks</p>
+<% end %>
+
 
   <h1 id="page-title">YOU ARE CONNECTED ON THE STORE : <%= @shop.shopify_domain %></h1>
 

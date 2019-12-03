@@ -19,6 +19,8 @@ gem 'uglifier'
 gem 'webpacker'
 gem 'shopify_app'
 gem 'rack-cors', require: 'rack/cors'
+gem 'unidecoder'
+gem 'savon'
 
 
 group :development do
