@@ -7,30 +7,7 @@
 <div class="container">
 
 <h1><%= @shop_session.domain %></h1>
-<%= link_to 'Destroy all orders', destroy_all_order_path, remote: true %>
-<%= link_to 'Destroy all customers', destroy_all_customers_path, remote: true %>
 
-<%= link_to 'Create some orders', create_sample_orders_path, remote: true %>
-<%= link_to 'Import Orders', import_orders_path, remote: true  %>
-<%= link_to 'Import customers', import_customers_path, remote: true  %>
-
-
-<ul>
-  <% @products.each do |product| %>
-    <li><%= link_to product.title, "https://#{@shop_session.domain}/admin/products/#{product.id}", target: "_top" %></li>
-  <% end %>
-</ul>
-
-<ul>
-  <% @customers.each do |customer| %>
-    <li><%= link_to customer.first_name, "https://#{@shop_session.domain}/admin/customer/#{customer.id}", target: "_top" %></li>
-  <% end %>
-</ul>
-<ul>
-  <% @orders.each do |order| %>
-    <li><%= link_to order.name, "https://#{@shop_session.domain}/admin/order/#{order.id}", target: "_top" %></li>
-  <% end %>
-</ul>
 <hr>
 
 <h2>Webhooks</h2>
@@ -46,18 +23,34 @@
 <% end %>
 
 
-  <h1 id="page-title">YOU ARE CONNECTED ON THE STORE : <%= @shop.shopify_domain %></h1>
-
+  <!-- <h1 id="page-title">YOU ARE CONNECTED ON THE STORE : <%= @shop.shopify_domain %></h1> -->
+  <hr>
   <div class="actions">
     <h1>What do you wanna do ?</h1>
-    <button class="btn"><%= link_to 'Destroy all orders', destroy_all_order_path, remote: true %></button>
-    <button class="btn"><%= link_to 'Create some orders', create_sample_orders_path, remote: true %></button>
-    <button class="btn"><%= link_to 'Import Orders', import_orders_path, remote: true  %></button>
+    <button type="button" class="btn btn-danger btn-lg" data-toggle="modal" data-target="#destroyOrdersModal">
+      Destroy all orders
+    </button>
+    <button type="button" class="btn btn-danger btn-lg" data-toggle="modal" data-target="#destroyCustomersModal">
+      Destroy all customers
+    </button>
+    <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#createSomeOrders">
+      Create some orders
+    </button>
+
+    <% if @shop_session.domain == 'lespetitsbidons.myshopify.com
+' %>
+      <%= link_to 'Import Orders LPB', import_orders_path, remote: true, class: 'btn btn-lg btn-primary '  %>
+      <%= link_to 'Import customers LPB', import_customers_path, remote: true, class: 'btn btn-lg btn-primary '  %>
+    <% end %>
+
+
+
+
   </div>
 
   <div class="contents">
 
-    <div class="content">
+    <div class="content card">
 
       <h1>PRODUCTS : <%= @products.size  %></h1>
 
@@ -68,7 +61,7 @@
       </ul>
     </div>
 
-    <div class="content">
+    <div class="content card">
 
       <h1>CUSTOMERS : <%= @customers.size  %></h1>
 
@@ -80,7 +73,7 @@
 
     </div>
 
-    <div class="content">
+    <div class="content card">
 
     <h1>ORDERS : <%= @orders.size  %></h1>
 
@@ -106,4 +99,65 @@
       <% end %>
 
 
+</div>
+
+
+<div id="destroyOrdersModal" class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Vous êtes sur de vouloir détruire toutes les orders ?</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Nous allons effacer toutes les orders de ces 2 derniers mois</p>
+      </div>
+      <div class="modal-footer">
+        <%= link_to 'Destroy all orders', destroy_all_order_path, remote: true, class: 'btn btn-lg btn-danger ' %>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="destroyCustomersModal" class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Vous êtes sur de vouloir détruire toutes les Customers ?</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Nous allons effacer tous les Customers (les orders doivent etre vide)</p>
+      </div>
+      <div class="modal-footer">
+        <%= link_to 'Destroy all customers', destroy_all_customers_path, remote: true, class: 'btn btn-lg btn-danger destroy_customer ' %>
+
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="createSomeOrders" class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Nous allons Créer 6 orders</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p></p>
+      </div>
+      <div class="modal-footer">
+    <%= link_to 'Create some orders', create_sample_orders_path, remote: true, class: 'btn btn-lg btn-primary ' %>
+
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+      </div>
+    </div>
+  </div>
 </div>

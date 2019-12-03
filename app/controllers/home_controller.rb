@@ -27,8 +27,8 @@
 
     def index
       @products = ShopifyAPI::Product.find(:all, params: { limit: 100 })
-      @customers = ShopifyAPI::Customer.find(:all, params: { limit: 100 })
-      @orders = ShopifyAPI::Order.find(:all, params: { limit: 100 })
+      @customers = ShopifyAPI::Customer.find(:all, params: { limit: 250 })
+      @orders = ShopifyAPI::Order.find(:all, params: { limit: 250, status: 'any' })
       @webhooks = ShopifyAPI::Webhook.find(:all)
     end
 
