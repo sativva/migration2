@@ -22,12 +22,11 @@ gem 'shopify_app'
 gem 'rack-cors', require: 'rack/cors'
 gem 'unidecoder'
 gem 'savon'
+gem 'faker', :git => 'https://github.com/faker-ruby/faker.git', :branch => 'master'
 
 
 group :development do
   gem 'web-console', '>= 3.3.0'
-  gem 'faker', :git => 'https://github.com/faker-ruby/faker.git', :branch => 'master'
-
 end
 
 group :development, :test do
