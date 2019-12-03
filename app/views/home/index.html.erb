@@ -3,7 +3,7 @@
 <%= javascript_pack_tag 'hello_react' %>
 
 <!-- <div id="app"></div> -->
-
+<h1><%= @shop_session.domain %></h1>
 <%= link_to 'Destroy all orders', destroy_all_order_path, remote: true %>
 <%= link_to 'Destroy all customers', destroy_all_customers_path, remote: true %>
 
