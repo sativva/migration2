@@ -1,4 +1,4 @@
-0  # frozen_string_literal: true
+ # frozen_string_literal: true
 
   class HomeController < ShopifyApp::AuthenticatedController
     layout "application"
@@ -80,8 +80,9 @@
               "country": Faker::Address.country_code
             },
             financial_status: "paid",
-            fulfillment_status: "unfulfilled",
-            customer: { id: @customers_ids.sample }}
+            fulfillment_status: "unfulfilled"
+            # customer: { id: @customers_ids.sample }
+            }
         ShopifyAPIRetry.retry { ShopifyAPI::Order.create(order) }
 
 

@@ -22,6 +22,7 @@ gem 'shopify_app'
 gem 'rack-cors', require: 'rack/cors'
 gem 'unidecoder'
 gem 'savon'
+gem 'sprockets', '~> 3.0'
 
 
 group :development do
