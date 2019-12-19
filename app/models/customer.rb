@@ -1,4 +1,4 @@
 class Customer < ApplicationRecord
   belongs_to :shop
-  validates :email, :uniqueness => true, :scope => :shop_id
+  validates :email, uniqueness: { scope: :shop }
 end
