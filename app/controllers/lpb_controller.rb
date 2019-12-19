@@ -27,7 +27,7 @@
         csv = CSV.open(localfile, headers: false,liberal_parsing: true)
         csv.each_with_index do |line, i|
           next if i == 0
-          # next if i == 1
+          next if lili[0].nil?
 
           lili = line.join(',').to_s.gsub(/\"/, "").split(';')
           ziqy_customer_id = lili[0]
