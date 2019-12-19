@@ -170,7 +170,7 @@
           cust.id.present? ? (customer[:id] = cust.id) : (p 'new')
           sleep(0.5)
 
-          p cus = ShopifyAPI::Customer.new(customer)
+          # p cus = ShopifyAPI::Customer.new(customer)
           if cus.save
             Customer.create({
               name: cus.last_name,
