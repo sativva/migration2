@@ -29,7 +29,7 @@
           next if i == 0
           lili = line.join(',').to_s.gsub(/\"/, "").split(';')
 
-          next if lili[0].nil?
+          next if lili[0].blank?
 
           ziqy_customer_id = lili[0]
 
