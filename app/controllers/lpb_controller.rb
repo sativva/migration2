@@ -25,7 +25,7 @@
         localfile = File.basename(file)
         ftp.getbinaryfile(file, localfile, @blocksize)
         csv = CSV.open(localfile, headers: false,liberal_parsing: true)
-        csv.drop(1110).first(20).each_with_index do |line, i|
+        csv.each_with_index do |line, i|
           next if i == 0
           # next if i == 1
 
