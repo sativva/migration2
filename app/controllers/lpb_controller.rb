@@ -27,7 +27,7 @@
         csv = CSV.open(localfile, headers: false,liberal_parsing: true)
         csv.drop(1110).first(20).each_with_index do |line, i|
           next if i == 0
-          next if i == 1
+          # next if i == 1
 
           lili = line.join(',').to_s.gsub(/\"/, "").split(';')
           ziqy_customer_id = lili[0]
@@ -37,7 +37,7 @@
           last_name = lili[11].present? ? lili[11].gsub(/\,/,'') : nil
           email = lili[12]
 
-          a_name = lili[39]
+          a_name = lili[39] #wrong
 
 
 
@@ -77,7 +77,7 @@
           if mondial_id.present?
             metafields << {
               key: "mondial_id",
-              value: mondial_id,
+              value: "#{mondial_country_code}#{mondial_id}",
               value_type: "string",
               namespace: "mondial_relay"
             }
@@ -88,13 +88,13 @@
               namespace: "mondial_relay"
             }
             metafields << {
-              key: "mondial_addr1",
+              key: "mondial_address1",
               value: mondial_addr1,
               value_type: "string",
               namespace: "mondial_relay"
             }
             metafields << {
-              key: "mondial_addr2",
+              key: "mondial_address2",
               value: mondial_addr2,
               value_type: "string",
               namespace: "mondial_relay"
@@ -111,6 +111,12 @@
               value_type: "string",
               namespace: "mondial_relay"
             }
+            metafields << {
+              key: "mondial_country",
+              value: mondial_country_code,
+              value_type: "string",
+              namespace: "mondial_relay"
+            }
           end
           if birthday.present?
             metafields << {
@@ -121,7 +127,7 @@
             }
           end
 
-          tags = "Ziqy, #{ziqy_customer_id}"
+          tags = "Ziqy, ZIQY-ID:#{ziqy_customer_id}"
 
 
 
@@ -180,6 +186,8 @@
         end
       end
     end
+
+
     def create_recharge_csv
       set_FTP_settings
       today = Time.now
@@ -570,52 +578,52 @@
       line_items_variants_id = []
       if lili[30]
         lili[30].to_i.times do
-          line_items_variants_id << "30734961115232"
+          line_items_variants_id << "31511698800736"
         end
       end
       if lili[25]
         lili[25].to_i.times do
-          line_items_variants_id << "30734961115232"
+          line_items_variants_id << "31511698800736"
         end
       end
       if lili[26]
         lili[26].to_i.times do
-          line_items_variants_id << "30734960459872"
+          line_items_variants_id << "31511636541536"
         end
       end
       if lili[31]
         lili[31].to_i.times do
-          line_items_variants_id << "30734960459872"
+          line_items_variants_id << "31511636541536"
         end
       end
       if lili[27]
         lili[27].to_i.times do
-          line_items_variants_id << "30734956494944"
+          line_items_variants_id << "31512643371104"
         end
       end
       if lili[32]
         lili[32].to_i.times do
-          line_items_variants_id << "30734956494944"
+          line_items_variants_id << "31512643371104"
         end
       end
       if lili[28]
         lili[28].to_i.times do
-          line_items_variants_id << "30734959378528"
+          line_items_variants_id << "31512664277088"
         end
       end
       if lili[33]
         lili[33].to_i.times do
-          line_items_variants_id << "30734959378528"
+          line_items_variants_id << "31512664277088"
         end
       end
       if lili[29]
         lili[29].to_i.times do
-          line_items_variants_id << "30734961049696"
+          line_items_variants_id << "31512649564256"
         end
       end
       if lili[34]
         lili[34].to_i.times do
-          line_items_variants_id << "30734961049696"
+          line_items_variants_id << "31512649564256"
         end
       end
       if lili[35]
@@ -628,6 +636,9 @@
           line_items_variants_id << "30734956232800"
         end
       end
+
+      # // 4422322946144 le super détachant
+
       line_items_variants_id
     end
 
