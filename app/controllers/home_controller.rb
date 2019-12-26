@@ -99,6 +99,13 @@
       @folder = 'migration-shopify'
     end
 
+    def set_FTP_settings_T
+      @blocksize = 5120
+      @username  = 'thomasrokr'
+      @hostname  = 'ftp.cluster020.hosting.ovh.net'
+      @password  = 'Street75'
+      @folder = 'thomasrokr'
+    end
 
     def set_session
       @shop = Shop.where(shopify_domain: session[:shopify_domain]).first
