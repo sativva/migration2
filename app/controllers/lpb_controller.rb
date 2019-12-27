@@ -38,7 +38,7 @@
           order_date = DateTime.parse(lili[10])
           date_first_export = DateTime.parse("2019-12-19 15:00:31")
           next if order_date > date_first_export
-          tags = ", REFZIQY|#{lili[2]}, IDZIQY|#{lili[1]} "
+          tags = "REFZIQY|#{lili[2]}, IDZIQY|#{lili[1]} "
           tags += lili[4].to_i.zero? ?   ", Eshop" : ", Subscription "
           tags += lili[6].to_i.zero? ?  "" : ", Carte Cadeau "
           case lili[9]
@@ -241,8 +241,10 @@
             sleep(1)
 
             if fulfill = ShopifyAPIRetry.retry { ShopifyAPI::Fulfillment.create(fulfillment) }
-              p 'fulfillment saved'
+              p '_____________fulfillment saved'
             end
+          else
+            p "__________________errors #{ooo.errors.messages}"
           end
 
 
