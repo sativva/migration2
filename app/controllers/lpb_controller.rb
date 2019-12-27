@@ -35,11 +35,9 @@
           next if i == 0
 
           lili = line.join(',').to_s.gsub(/\"/, "").split(';')
-
           order_date = DateTime.parse(lili[10])
           date_first_export = DateTime.parse("2019-12-19 15:00:31")
           next if order_date > date_first_export
-
           tags = ", REFZIQY|#{lili[2]}, IDZIQY|#{lili[1]} "
           tags += lili[4].to_i.zero? ?   ", Eshop" : ", Subscription "
           tags += lili[6].to_i.zero? ?  "" : ", Carte Cadeau "
@@ -58,7 +56,6 @@
           p lili[16].downcase.include?('paris')
           p location.first
           p location.last
-
           p location_id = lili[16].downcase.include?('paris') ? location.first : location.last
 
           tags += lili[19].to_i.zero? ? "" : ", 1bidon"
@@ -66,8 +63,6 @@
           tags += lili[21].to_i.zero? ? "" : ", 3bidon"
           tags += lili[4].to_i.zero? ? "" : ", echeance_nb:#{lili[43]}"
           tags += lili[18].empty? ? "" : ", ZIQY-DISCOUNT|#{lili[18]}"
-
-
 
           lpb_products_result = lpb_products(lili)
 
@@ -169,7 +164,7 @@
             total_price: ttc_price,
             financial_status: "paid",
             created_at: DateTime.parse(lili[10]),
-            total_discounts: discount.to_f
+            total_discounts: discount.to_f,
             # discount_codes: lili[18].empty? ? nil : [lili[18]],
             line_items: line_items,
             location_id: location_id,
