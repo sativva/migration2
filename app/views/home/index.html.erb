@@ -38,8 +38,8 @@
     </button>
 
     <% if @shop_session.domain ==  "lespetitsbidons.myshopify.com" %>
-      <%= link_to 'Import Orders LPB', import_orders_path, remote: true, class: 'btn btn-lg btn-primary '  %>
-      <%= link_to 'Import customers LPB', import_customers_path, remote: true, class: 'btn btn-lg btn-primary ', method: :post %>
+      <%= link_to 'Import Orders LPB', import_orders_path, remote: true, class: 'btn btn-lg btn-primary ', method: :post  %>
+      <%= link_to 'Import customers LPB', import_customers_path, remote: true, class: 'btn btn-lg btn-primary ' %>
       <%= link_to 'create_recharge_csv',create_recharge_csv_path, remote: true, class: "btn btn-lg btn-primary"  %>
     <% end %>
 

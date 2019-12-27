@@ -31,10 +31,46 @@
         ftp.getbinaryfile(file, localfile, @blocksize)
 
         csv = CSV.open(localfile, headers: false,liberal_parsing: true)
-        csv.each_with_index do |line, i|
+        csv = csv.first(4000)
+        csv.drop(52).each_with_index do |line, i|
           next if i == 0
 
           lili = line.join(',').to_s.gsub(/\"/, "").split(';')
+          p lili.length
+          p i
+          p csv[i]
+          next if lili.length == 20
+
+          if lili.length == 65
+            lili = (csv[i]+csv[i+1]).join(',').to_s.gsub(/\"/, "").split(';')
+            p lili.length
+          end
+          if lili.length != 84
+            p lili[2]
+            p "__________________________________________________"
+            p "__________________________________________________"
+            p "__________________________________________________"
+            p "__________________________________________________"
+            p "__________________________________________________"
+            p "__________________________________________________"
+            p "__________________________________________________"
+            p "__________________________________________________"
+            p "__________________________________________________"
+            p "__________________________________________________"
+            p "__________________________________________________"
+            p "__________________________________________________"
+            p "__________________________________________________"
+            p "__________________________________________________"
+            p "__________________________________________________"
+            p "__________________________________________________"
+            p "__________________________________________________"
+            p "__________________________________________________"
+
+          end
+
+
+
+
           order_date = DateTime.parse(lili[10])
           date_first_export = DateTime.parse("2019-12-19 15:00:31")
           next if order_date > date_first_export
@@ -240,7 +276,7 @@
           ooo = ShopifyAPI::Order.new(order_ready)
           if ShopifyAPIRetry.retry { ooo.save }
             p "_____________SAVED_____________________"
-            sleep(1)
+            sleep(0.5)
             fulfillment = {
               location_id: location_id,
               tracking_number: "",
@@ -250,7 +286,7 @@
               order_id: ooo.id,
               prefix_options: { order_id: ooo.id }
             }
-            sleep(1)
+            sleep(0.5)
 
             if fulfill = ShopifyAPIRetry.retry { ShopifyAPI::Fulfillment.create(fulfillment) }
               p '_____________fulfillment saved'
