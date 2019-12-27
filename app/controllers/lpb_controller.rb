@@ -14,8 +14,8 @@
 
     # Check IF order exists by name == OK
     # discount codes
-    # ooos = ShopifyAPI::Order.find(:all, params:{status: "any"})
-    # ooos.select {|o| o.name.include?('ZIQY')}.each {|o| o.destroy }
+    ooos = ShopifyAPI::Order.find(:all, params:{status: "any"})
+    ooos.select {|o| o.name.include?('ZIQY')}.each {|o| o.destroy }
 
     def import_orders
       set_FTP_settings
@@ -31,7 +31,7 @@
         ftp.getbinaryfile(file, localfile, @blocksize)
 
         csv = CSV.open(localfile, headers: false,liberal_parsing: true)
-        csv.drop(287).first(100).each_with_index do |line, i|
+        csv.each_with_index do |line, i|
           next if i == 0
 
           lili = line.join(',').to_s.gsub(/\"/, "").split(';')
