@@ -12,13 +12,16 @@
     require 'csv'
     require 'date'
 
-    # Check IF order exists by name
+    # Check IF order exists by name == OK
     # discount codes
+    # ooos = ShopifyAPI::Order.find(:all, params:{status: "any"})
+    # ooos.select {|o| o.name.include?('ZIQY')}.each {|o| o.destroy }
 
     def import_orders
       set_FTP_settings
-      location = ShopifyAPI::Location.all.map {|loc| loc.id }
-
+      location = ShopifyAPIRetry.retry { ShopifyAPI::Location.all.map {|loc| loc.id } }
+      p 'locations'
+      p location
       ftp = Net::FTP.new(@hostname, @username, @password)
       ftp.chdir(@folder)
       files = ftp.nlst('*.csv')
@@ -28,16 +31,16 @@
         ftp.getbinaryfile(file, localfile, @blocksize)
 
         csv = CSV.open(localfile, headers: false,liberal_parsing: true)
-        csv.first(100).each_with_index do |line, i|
+        csv.drop(287).first(100).each_with_index do |line, i|
           next if i == 0
 
-          lili = line[0].to_s.gsub(/\"/, "").split(';')
+          lili = line.join(',').to_s.gsub(/\"/, "").split(';')
 
           order_date = DateTime.parse(lili[10])
           date_first_export = DateTime.parse("2019-12-19 15:00:31")
           next if order_date > date_first_export
 
-          tags = "REFZIQY|#{lili[2]}, IDZIQY|#{lili[0]} "
+          tags = ", REFZIQY|#{lili[2]}, IDZIQY|#{lili[1]} "
           tags += lili[4].to_i.zero? ?   ", Eshop" : ", Subscription "
           tags += lili[6].to_i.zero? ?  "" : ", Carte Cadeau "
           case lili[9]
@@ -58,58 +61,34 @@
 
           p location_id = lili[16].downcase.include?('paris') ? location.first : location.last
 
-          tags += lili[19].to_i.zero? ? "" : "1bidon, "
-          tags += lili[20].to_i.zero? ? "" : "2bidon, "
-          tags += lili[21].to_i.zero? ? "" : "3bidon, "
-          tags += lili[4].to_i.zero? ? "" : "echeance_nb:#{lili[37]} ,"
-
-          line_items_variants_id = lpb_products(lili)
-
+          tags += lili[19].to_i.zero? ? "" : ", 1bidon"
+          tags += lili[20].to_i.zero? ? "" : ", 2bidon"
+          tags += lili[21].to_i.zero? ? "" : ", 3bidon"
+          tags += lili[4].to_i.zero? ? "" : ", echeance_nb:#{lili[43]}"
+          tags += lili[18].empty? ? "" : ", ZIQY-DISCOUNT|#{lili[18]}"
 
 
-          p line_items_variants_id
+
+          lpb_products_result = lpb_products(lili)
+
+          p discount = lpb_products_result[:discount]
           line_items = []
 
-
-
-          change_pricing_date = DateTime.parse("2018-12-12 00:00:31")
           tax_rate = 0.2
-          if order_date < change_pricing_date
-            price = 13.9
-            abo_price = 12.9
-          else
-            price = 12.9
-            abo_price = 11.9
-          end
 
-          p line_items_variants_id.size
 
-          line_items_variants_id.each do |v|
-            if (v == "30734956232800" || v == "30734958559328" || v == "4422322946144")
-              if v == "30734956232800"
-                price = (lili[40].to_f * 1.2).round(2)
-              elsif v == "30734958559328"
-                price =(lili[39].to_f * 1.2).round(2)
-              else
-                price =(lili[41].to_f * 1.2).round(2)
-              end
-              b = Hash.new(0)
-              b[:variant_id] = v
-              b[:quantity] = 1
-              b[:price] = price
-              b[:title] =  @products.select {|product| product.variants.map {|variant| variant.id }.include?(v.to_i)}.first.title
+          lpb_products_result[:line_items_variants_id].each do |v|
 
-            else
-              b = Hash.new(0)
-              b[:variant_id] = v
-              b[:quantity] = 1
-              b[:price] = lili[6].to_i.zero? ? price : abo_price
-              b[:title] =  @products.select {|product| product.variants.map {|variant| variant.id }.include?(v.to_i)}.first.title
-            end
+            b = Hash.new(0)
+            b[:variant_id] = v[:id]
+            b[:quantity] = v[:quantity]
+            b[:price] = v[:price]
+            b[:title] =  @products.select {|product| product.variants.map {|variant| variant.id }.include?(v[:id].to_i)}.first.title
 
             line_items << b
-          end
 
+          end
+          p lili[63].present?
           metafields = []
           if lili[63].present?
 
@@ -167,24 +146,31 @@
               value_type: "string",
               namespace: "mondial_relay"
             }
-          end
+            end
           end
 
-
+          p 'tvz'
 
           tax_title = "TVA"
           ttc_price = lili[7].to_f
           ht_price = ttc_price / (tax_rate + 1)
           tax_price = ttc_price - ht_price
-          o_name = lili[4].to_i.zero? ? "ZIQY#{lili[1]}" : "ZIQY#{lili[1]}--#{lili[37]}"
-          order = {
+          p o_name = lili[4].to_i.zero? ? "ZIQY#{lili[1]}" : "ZIQY#{lili[1]}--#{lili[43]}"
+          p ooo =  ShopifyAPIRetry.retry { ShopifyAPI::Order.find(:all, params: {status: 'any', name: o_name, limit:'2' }).size }
+
+          next if ooo > 0
+
+          p "order_ready"
+
+          order_ready = {
             email: lili[11],
             tags: tags,
             name: o_name,
             total_price: ttc_price,
             financial_status: "paid",
             created_at: DateTime.parse(lili[10]),
-            discount_codes: lili[18].empty? ? nil : [lili[21]],
+            total_discounts: discount.to_f
+            # discount_codes: lili[18].empty? ? nil : [lili[18]],
             line_items: line_items,
             location_id: location_id,
             send_receipt: false,
@@ -243,7 +229,9 @@
           }
 
 
-          if order = ShopifyAPIRetry.retry { ShopifyAPI::Order.create(order) }
+
+          ooo = ShopifyAPI::Order.new(order_ready)
+          if ShopifyAPIRetry.retry { ooo.save }
             p "_____________SAVED_____________________"
             sleep(1)
             fulfillment = {
@@ -252,8 +240,8 @@
               tracking_urls: [],
               notify_customer: false,
               service: lili[16],
-              order_id: order.id,
-              prefix_options: { order_id: order.id }
+              order_id: ooo.id,
+              prefix_options: { order_id: ooo.id }
             }
             sleep(1)
 
@@ -271,76 +259,80 @@
 
 
     def lpb_products(lili)
+      p "lpb_products"
       line_items_variants_id = []
-      if lili[27]
-        lili[27].to_i.times do
-          line_items_variants_id << "31511698800736"
-        end
+      total_line_price = lili[17].to_f
+
+      if lili[19] == "1"
+        price_of_each = (lili[71].to_f * 1.2)
+      elsif lili[20] == "1"
+        price_of_each = (lili[72].to_f * 1.2) / 2
+      elsif lili[21] == "1"
+        price_of_each = (lili[73].to_f * 1.2) / 3
       end
-      if lili[22]
-        lili[22].to_i.times do
-          line_items_variants_id << "31511698800736"
-        end
+
+      if lili[22].to_i > 0
+        line_items_variants_id << {id: "31511698800736", price: price_of_each, quantity: lili[22]}
+        total_line_price += price_of_each * lili[22].to_i
       end
-      if lili[23]
-        lili[23].to_i.times do
-          line_items_variants_id << "31511636541536"
-        end
+      if lili[27].to_i > 0
+          line_items_variants_id << {id: "31511698800736", price: (lili[79] * 1.2).to_f, quantity: lili[27]}
+          total_line_price += (lili[79].to_f * 1.2) * lili[27].to_i
       end
-      if lili[28]
-        lili[28].to_i.times do
-          line_items_variants_id << "31511636541536"
-        end
+      if lili[23].to_i > 0
+          line_items_variants_id << {id: "31511636541536", price: price_of_each, quantity: lili[23]}
+          total_line_price += price_of_each * lili[23].to_i
       end
-      if lili[24]
-        lili[24].to_i.times do
-          line_items_variants_id << "31512643371104"
-        end
+      if lili[28].to_i > 0
+          line_items_variants_id << {id: "31511636541536", price: (lili[80].to_f * 1.2), quantity: lili[28]}
+          total_line_price += (lili[80].to_f * 1.2) * lili[28].to_i
       end
-      if lili[29]
-        lili[29].to_i.times do
-          line_items_variants_id << "31512643371104"
-        end
+      if lili[24].to_i > 0
+          line_items_variants_id << {id: "31512643371104", price: price_of_each, quantity: lili[24]}
+          total_line_price += price_of_each * lili[24].to_i
       end
-      if lili[25]
-        lili[25].to_i.times do
-          line_items_variants_id << "31512664277088"
-        end
+      if lili[29].to_i > 0
+          line_items_variants_id << {id: "31512643371104", price: (lili[81].to_f * 1.2), quantity: lili[29]}
+          total_line_price += (lili[81].to_f * 1.2) * lili[29].to_i
       end
-      if lili[30]
-        lili[30].to_i.times do
-          line_items_variants_id << "31512664277088"
-        end
+      if lili[25].to_i > 0
+          line_items_variants_id << {id: "31512664277088", price: price_of_each, quantity: lili[25]}
+          total_line_price += price_of_each * lili[25].to_i
       end
-      if lili[26]
-        lili[26].to_i.times do
-          line_items_variants_id << "31512649564256"
-        end
+      if lili[30].to_i > 0
+          line_items_variants_id << {id: "31512664277088", price: (lili[82].to_f * 1.2), quantity: lili[30]}
+          total_line_price += (lili[82].to_f * 1.2) * lili[30].to_i
       end
-      if lili[31]
-        lili[31].to_i.times do
-          line_items_variants_id << "31512649564256"
-        end
+      if lili[26].to_i > 0
+          line_items_variants_id <<  {id: "31512649564256", price: price_of_each, quantity: lili[26]}
+          total_line_price += price_of_each  * lili[26].to_i
       end
-      if lili[32]
-        lili[32].to_i.times do
-          line_items_variants_id << "30734958559328"
-        end
+      if lili[31].to_i > 0
+          line_items_variants_id << {id: "31512649564256", price: (lili[83].to_f * 1.2), quantity: lili[31]}
+          total_line_price += (lili[83].to_f * 1.2) * lili[31].to_i
       end
-      if lili[33]
-        lili[33].to_i.times do
-          line_items_variants_id << "30734956232800"
-        end
+      if lili[32].to_i > 0
+          line_items_variants_id << {id: "30734958559328", price: (lili[39].to_f * 1.2), quantity: lili[32]}
+          total_line_price += (lili[39].to_f * 1.2) * lili[32].to_i
       end
-      if lili[42]
-        lili[42].to_i.times do
-          line_items_variants_id << "4422322946144"
-        end
+      if lili[33].to_i > 0
+          line_items_variants_id << {id: "30734956232800", price: (lili[40].to_f * 1.2), quantity: lili[33]}
+          total_line_price += (lili[40].to_f * 1.2) * lili[33].to_i
+      end
+      if lili[42].to_i > 0
+          line_items_variants_id << {id: "4422322946144", price: (lili[41].to_f * 1.2), quantity: lili[42]}
+          total_line_price += (lili[41].to_f * 1.2) * lili[42].to_i
+      end
+
+      discount = 0
+      if total_line_price.round(2) != lili[7].to_f.round(2)
+        discount = total_line_price - lili[7].to_f
       end
 
 
-      line_items_variants_id
+      p result = {line_items_variants_id: line_items_variants_id, discount: discount}
     end
+
 
     def import_customers
       set_FTP_settings
