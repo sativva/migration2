@@ -6,7 +6,7 @@
       get 'destroy_all_customers', to: 'home#destroy_customers'
       get 'create_sample_orders', to: 'home#create_sample_orders'
 
-      get 'import_orders', to: 'lpb#import_orders'
+      post 'import_orders', to: 'lpb#import_orders'
       get 'import_customers', to: 'lpb#import_customers'
       get 'create_recharge_csv', to: 'lpb#create_recharge_csv'
 

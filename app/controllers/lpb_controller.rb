@@ -150,8 +150,20 @@
           ttc_price = lili[7].to_f
           ht_price = ttc_price / (tax_rate + 1)
           tax_price = ttc_price - ht_price
-          p o_name = lili[4].to_i.zero? ? "ZIQY#{lili[1]}" : "ZIQY#{lili[1]}--#{lili[43]}"
-          p ooo =  ShopifyAPIRetry.retry { ShopifyAPI::Order.find(:all, params: {status: 'any', name: o_name, limit:'2' }).size }
+          if lili[1].length == 1
+            order_number = "0000#{lili[1]}"
+          elsif lili[1].length == 2
+            order_number = "000#{lili[1]}"
+          elsif lili[1].length == 3
+            order_number = "00#{lili[1]}"
+          elsif lili[1].length == 4
+            order_number = "0#{lili[1]}"
+          elsif lili[1].length == 5
+            order_number = "#{lili[1]}"
+          end
+
+          p o_name = lili[4].to_i.zero? ? "ZIQY#{order_number}" : "ZIQY#{order_number}--#{lili[43]}"
+          p ooo =  ShopifyAPIRetry.retry { ShopifyAPI::Order.find(:all, params: {status: 'any', name: o_name, limit:'250' }).size }
 
           next if ooo > 0
 
