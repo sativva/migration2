@@ -14,8 +14,8 @@
 
     # Check IF order exists by name == OK
     # discount codes
-    ooos = ShopifyAPI::Order.find(:all, params:{status: "any"})
-    ooos.select {|o| o.name.include?('ZIQY')}.each {|o| o.destroy }
+    # ooos = ShopifyAPI::Order.find(:all, params:{status: "any"})
+    # ooos.select {|o| o.name.include?('ZIQY')}.each {|o| o.destroy }
 
     def import_orders
       set_FTP_settings
