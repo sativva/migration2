@@ -42,7 +42,7 @@ require 'date'
 
         csv = CSV.open(localfile, headers: false, liberal_parsing: true)
         csv = csv.first(4100)
-        csv.each_with_index do |line, i|
+        csv.drop(264).each_with_index do |line, i|
           next if i == 0
 
           lili = line.join(',').to_s.gsub(/\"/, "").split(';')
@@ -119,15 +119,16 @@ require 'date'
 
 
           lpb_products_result[:line_items_variants_id].each do |v|
-
             b = Hash.new(0)
             b[:variant_id] = v[:id]
             b[:quantity] = v[:quantity]
             b[:price] = v[:price]
-            b[:title] =  @products.select {|product| product.variants.map {|variant| variant.id }.include?(v[:id].to_i)}.first.title
-
+            if v == '4259267772512' || v == '4460046581856'
+              b[:title] =  @products.select {|product| product.id == v }.first.title
+            else
+              b[:title] =  @products.select {|product| product.variants.map {|variant| variant.id }.include?(v[:id].to_i)}.first.title
+            end
             line_items << b
-
           end
           p lili[63].present?
           metafields = []
@@ -369,15 +370,15 @@ require 'date'
           total_line_price += (lili[83].to_f * 1.2) * lili[31].to_i
       end
       if lili[32].to_i > 0
-          line_items_variants_id << {id: "30734958559328", price: (lili[39].to_f * 1.2), quantity: lili[32]}
+          line_items_variants_id << {id: "4460046581856", price: (lili[39].to_f * 1.2), quantity: lili[32]}
           total_line_price += (lili[39].to_f * 1.2) * lili[32].to_i
       end
       if lili[33].to_i > 0
-          line_items_variants_id << {id: "30734956232800", price: (lili[40].to_f * 1.2), quantity: lili[33]}
+          line_items_variants_id << {id: "4259267772512", price: (lili[40].to_f * 1.2), quantity: lili[33]}
           total_line_price += (lili[40].to_f * 1.2) * lili[33].to_i
       end
       if lili[42].to_i > 0
-          line_items_variants_id << {id: "4422322946144", price: (lili[41].to_f * 1.2), quantity: lili[42]}
+          line_items_variants_id << {id: "31622336217184", price: (lili[41].to_f * 1.2), quantity: lili[42]}
           total_line_price += (lili[41].to_f * 1.2) * lili[42].to_i
       end
 
