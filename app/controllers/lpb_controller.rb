@@ -281,7 +281,9 @@
 
 
           ooo = ShopifyAPI::Order.new(order_ready)
-          if ShopifyAPIRetry.retry { ooo.save }
+          if !ooo.nil? && ShopifyAPIRetry.retry { ooo.save }
+            o_id = ooo.id
+            ooo = nil
             p "_____________SAVED_____________________"
             sleep(0.5)
             fulfillment = {
@@ -290,8 +292,8 @@
               tracking_urls: [],
               notify_customer: false,
               service: lili[16],
-              order_id: ooo.id,
-              prefix_options: { order_id: ooo.id }
+              order_id: o_id,
+              prefix_options: { order_id: o_id }
             }
             sleep(0.5)
 
