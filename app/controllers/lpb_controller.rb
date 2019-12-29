@@ -29,22 +29,24 @@
         next unless file.include?('orders')
         localfile = File.basename(file)
         ftp.getbinaryfile(file, localfile, @blocksize)
+        CSV::Converters[:my_converters] = lambda{ |field3|
+          begin
+            field3.to_s.gsub(/\n/, '$$$$$$$$$$')
+          rescue ArgumentError
+            field3
+          end
+        }
 
-        csv = CSV.open(localfile, headers: false,liberal_parsing: true)
-        csv = csv.first(4000)
-        csv.drop(52).each_with_index do |line, i|
+        csv = csv.first(4100)
+        csv.each_with_index do |line, i|
           next if i == 0
 
           lili = line.join(',').to_s.gsub(/\"/, "").split(';')
           p lili.length
-          p i
+
           p csv[i]
           next if lili.length == 20
 
-          if lili.length == 65
-            lili = (csv[i]+csv[i+1]).join(',').to_s.gsub(/\"/, "").split(';')
-            p lili.length
-          end
           if lili.length != 84
             p lili[2]
             p "__________________________________________________"
