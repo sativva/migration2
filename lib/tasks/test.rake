@@ -123,8 +123,8 @@ require 'date'
             b[:variant_id] = v[:id]
             b[:quantity] = v[:quantity]
             b[:price] = v[:price]
-            if v == '4259267772512' || v == '4460046581856'
-              b[:title] =  @products.select {|product| product.id == v }.first.title
+            if v[:id] == '4259267772512' || v[:id] == '4460046581856'
+              b[:title] =  @products.select {|product| product.id == v[:id].to_i }.first.title
             else
               b[:title] =  @products.select {|product| product.variants.map {|variant| variant.id }.include?(v[:id].to_i)}.first.title
             end
