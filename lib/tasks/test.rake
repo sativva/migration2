@@ -41,8 +41,8 @@ require 'date'
         # }
 
         csv = CSV.open(localfile, headers: false, liberal_parsing: true)
-        csv = csv.first(4100)
-        csv.drop(264).each_with_index do |line, i|
+        csv = csv.first(5100)
+        csv.each_with_index do |line, i|
           next if i == 0
 
           lili = line.join(',').to_s.gsub(/\"/, "").split(';')
