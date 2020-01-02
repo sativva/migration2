@@ -87,6 +87,7 @@ require 'date'
           tags = "REFZIQY|#{lili[2]}, IDZIQY|#{lili[1]} "
           tags += lili[4].to_i.zero? ?   ", Eshop" : ", Subscription "
           tags += lili[6].to_i.zero? ?  "" : ", Carte Cadeau "
+          tags += ", STATEZIQY|#{lili[9]}"
           case lili[9]
             when "Expédié"
               fulfillment_status = "fulfilled"
@@ -94,8 +95,16 @@ require 'date'
               fulfillment_status = "fulfilled"
             when "En cours de préparation"
               fulfillment_status = nil
+            when "En cours de livraison"
+              fulfillment_status = nil
             when "Paiement accepté"
               fulfillment_status = nil
+            when "Remboursé"
+              fulfillment_status = nil
+            when "Paiement à distance accepté"
+              fulfillment_status = nil
+            when "Annulé"
+              next
           end
 
 
