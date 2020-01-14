@@ -625,7 +625,19 @@
           }
 
 
-          cust.id.present? ? (customer[:id] = cust.id) : (p 'new')
+          if cust.id.present?
+            (customer[:id] = cust.id)
+            Customer.create({
+              name: cust.last_name,
+              accepts_marketing: accepts_marketing.to_s,
+              email: cust.email,
+              first_name: cust.first_name,
+              account_activation_url: cust.account_activation_url,
+              shop_id: @shop.id
+            })
+          else
+            (p 'new')
+          end
           sleep(0.5)
 
           p cus = ShopifyAPI::Customer.new(customer)
