@@ -312,16 +312,15 @@
     end
 
     def lpb_products_recharge(lili)
-      p "lpb_products"
       line_items_variants_id = []
       total_line_price = 0
 
       if lili[17] == "1"
-        price_of_each = (lili[20].to_f * 1.2)
+        price_of_each = (lili[20].to_f)
       elsif lili[18] == "1"
-        price_of_each = (lili[21].to_f * 1.2) / 2
+        price_of_each = (lili[21].to_f) / 2
       elsif lili[19] == "1"
-        price_of_each = (lili[22].to_f * 1.2) / 3
+        price_of_each = (lili[22].to_f) / 3
       end
 
       #fleurs blanches
@@ -330,8 +329,8 @@
         total_line_price += price_of_each * lili[23].to_i
       end
       if lili[28].to_i > 0
-          line_items_variants_id << {id: "31511698800736", price: (lili[35] * 1.2).to_f, quantity: lili[28], p_id: "4259268067424"}
-          total_line_price += (lili[35].to_f * 1.2) * lili[28].to_i
+          line_items_variants_id << {id: "31511698800736", price: (lili[35]).to_f, quantity: lili[28], p_id: "4259268067424"}
+          total_line_price += (lili[35].to_f) * lili[28].to_i
       end
       #eucalyptus
       if lili[24].to_i > 0
@@ -339,8 +338,8 @@
           total_line_price += price_of_each * lili[24].to_i
       end
       if lili[29].to_i > 0
-          line_items_variants_id << {id: "31511636541536", price: (lili[36].to_f * 1.2), quantity: lili[29], p_id: "4259267936352"}
-          total_line_price += (lili[36].to_f * 1.2) * lili[29].to_i
+          line_items_variants_id << {id: "31511636541536", price: (lili[36].to_f), quantity: lili[29], p_id: "4259267936352"}
+          total_line_price += (lili[36].to_f) * lili[29].to_i
       end
 
       if lili[25].to_i > 0
@@ -348,37 +347,37 @@
           total_line_price += price_of_each * lili[25].to_i
       end
       if lili[30].to_i > 0
-          line_items_variants_id << {id: "31512643371104", price: (lili[37].to_f * 1.2), quantity: lili[30], p_id: "4259267838048"}
-          total_line_price += (lili[37].to_f * 1.2) * lili[30].to_i
+          line_items_variants_id << {id: "31512643371104", price: (lili[37].to_f), quantity: lili[30], p_id: "4259267838048"}
+          total_line_price += (lili[37].to_f) * lili[30].to_i
       end
       if lili[26].to_i > 0
           line_items_variants_id << {id: "31512664277088", price: price_of_each, quantity: lili[26], p_id: "4259267903584", sub: true}
           total_line_price += price_of_each * lili[26].to_i
       end
       if lili[31].to_i > 0
-          line_items_variants_id << {id: "31512664277088", price: (lili[38].to_f * 1.2), quantity: lili[31], p_id: "4259267903584"}
-          total_line_price += (lili[38].to_f * 1.2) * lili[31].to_i
+          line_items_variants_id << {id: "31512664277088", price: (lili[38].to_f), quantity: lili[31], p_id: "4259267903584"}
+          total_line_price += (lili[38].to_f) * lili[31].to_i
       end
       if lili[27].to_i > 0
           line_items_variants_id <<  {id: "31512649564256", price: price_of_each, quantity: lili[27], p_id: "4259268001888", sub: true}
           total_line_price += price_of_each  * lili[27].to_i
       end
       if lili[32].to_i > 0
-          line_items_variants_id << {id: "31512649564256", price: (lili[39].to_f * 1.2), quantity: lili[32], p_id: "4259268001888"}
-          total_line_price += (lili[39].to_f * 1.2) * lili[32].to_i
+          line_items_variants_id << {id: "31512649564256", price: (lili[39].to_f), quantity: lili[32], p_id: "4259268001888"}
+          total_line_price += (lili[39].to_f) * lili[32].to_i
       end
 
       if lili[33].to_i > 0
-          line_items_variants_id << {id: "30734958559328", price: (lili[40].to_f * 1.2), quantity: lili[33]}
-          total_line_price += (lili[40].to_f * 1.2) * lili[33].to_i
+          line_items_variants_id << {id: "31660422135904", price: (lili[40].to_f), quantity: lili[33]}
+          total_line_price += (lili[40].to_f) * lili[33].to_i
       end
       if lili[34].to_i > 0
-          line_items_variants_id << {id: "30734956232800", price: (lili[41].to_f * 1.2), quantity: lili[34]}
-          total_line_price += (lili[41].to_f * 1.2) * lili[34].to_i
+          line_items_variants_id << {id: "30734956232800", price: (lili[41].to_f), quantity: lili[34]}
+          total_line_price += (lili[41].to_f) * lili[34].to_i
       end
       if lili[43].to_i > 0
-          line_items_variants_id << {id: "31622336217184", price: (lili[42].to_f * 1.2), quantity: lili[43]}
-          total_line_price += (lili[42].to_f * 1.2) * lili[43].to_i
+          line_items_variants_id << {id: "31622336217184", price: (lili[42].to_f), quantity: lili[43]}
+          total_line_price += (lili[42].to_f) * lili[43].to_i
       end
 
       discount = 0
@@ -387,7 +386,7 @@
       end
 
 
-      p result = {line_items_variants_id: line_items_variants_id, discount: discount}
+      result = {line_items_variants_id: line_items_variants_id, discount: discount}
     end
 
 
@@ -445,7 +444,7 @@
               total_line_price += (lili[83].to_f * 1.2) * lili[31].to_i
           end
           if lili[32].to_i > 0
-              line_items_variants_id << {id: "30734958559328", price: (lili[39].to_f * 1.2), quantity: lili[32]}
+              line_items_variants_id << {id: "31660422135904", price: (lili[39].to_f * 1.2), quantity: lili[32]}
               total_line_price += (lili[39].to_f * 1.2) * lili[32].to_i
           end
           if lili[33].to_i > 0
@@ -453,7 +452,7 @@
               total_line_price += (lili[40].to_f * 1.2) * lili[33].to_i
           end
           if lili[42].to_i > 0
-              line_items_variants_id << {id: "4422322946144", price: (lili[41].to_f * 1.2), quantity: lili[42]}
+              line_items_variants_id << {id: "31622336217184", price: (lili[41].to_f * 1.2), quantity: lili[42]}
               total_line_price += (lili[41].to_f * 1.2) * lili[42].to_i
           end
 
@@ -649,7 +648,7 @@
     def create_recharge_csv_2
       rulseset_id = "225483"
       unique_ruleset_id = "227711"
-      prod_comp = %w(31622336217184 30734956232800 4422322946144)
+      prod_comp = %w(31622336217184 30734956232800 31660422135904)
       lessive_one_time = %w(31511698800736 31511636541536 31512643371104 31512664277088 31512649564256)
       no_sub_prod = prod_comp + lessive_one_time
 
@@ -661,18 +660,17 @@
       ftp = Net::FTP.new(@hostname, @username, @password)
       ftp.chdir(@folder)
       files = ftp.nlst('*.csv')
+      csv_data = CSV.generate(col_sep: ";") do |csv_re|
+        csv_re << %w(subscription_id shopify_product_name shopify_variant_name shopify_product_id  shopify_variant_id  quantity  recurring_price charge_interval_unit_type charge_interval_frequency shipping_interval_unit_type shipping_interval_frequency is_prepaid  charge_on_day_of_month  last_charge_date  next_charge_date  customer_stripe_id  customer_created_at shipping_email  shipping_first_name shipping_last_name  shipping_phone  shipping_address_1  shipping_address_2  shipping_city shipping_province shipping_zip  shipping_country  shipping_company  billing_first_name  billing_last_name billing_address_1 billing_address_2 billing_city  billing_postalcode  billing_province_state  billing_country billing_phone status discount_code original_shipping_title original_shipping_price)
 
-      files.each do |file|
-        # Requete 61 paid but not delivery february
-        next unless file.include?('_61') || file.include?('_63') || file.include?('_64')
+        files.each do |file|
+          # Requete 61 paid but not delivery february
+          next unless file.include?('_61') || file.include?('_63') || file.include?('_64') || file.include?('_66') || file.include?('_67')
+          p file
+          localfile = File.basename(file)
+          ftp.getbinaryfile(file, localfile, @blocksize)
 
-        localfile = File.basename(file)
-        ftp.getbinaryfile(file, localfile, @blocksize)
-
-        csv_commandes = CSV.open(localfile, headers: false,liberal_parsing: true)
-
-        csv_data = CSV.generate(col_sep: ";") do |csv_re|
-          csv_re << %w(subscription_id shopify_product_name shopify_variant_name shopify_product_id  shopify_variant_id  quantity  recurring_price charge_interval_unit_type charge_interval_frequency shipping_interval_unit_type shipping_interval_frequency is_prepaid  charge_on_day_of_month  last_charge_date  next_charge_date  customer_stripe_id  customer_created_at shipping_email  shipping_first_name shipping_last_name  shipping_phone  shipping_address_1  shipping_address_2  shipping_city shipping_province shipping_zip  shipping_country  shipping_company  billing_first_name  billing_last_name billing_address_1 billing_address_2 billing_city  billing_postalcode  billing_province_state  billing_country billing_phone discount_code original_shipping_title original_shipping_price)
+          csv_commandes = CSV.open(localfile, headers: false,liberal_parsing: true)
 
 
           mails_to_skip = []
@@ -680,147 +678,140 @@
             # p mails_to_skip
             lili = line.join(',').to_s.gsub(/\"/, "").gsub(/\"/, ",").split(';')
 
-            p "°_____________________________________°"
-            p "°_____________________________________°"
-            p lili
-            p "°_____________________________________°"
-            p "°_____________________________________°"
-
             next if i == 0
 
 
-            p "__________new____________"
+            # p "__________new____________"
 
 
 
             line_items = {}
 
             line_items_variants_id = lpb_products_recharge(lili)
-            p "line_items_variants_id: #{line_items_variants_id}"
+            # p "line_items_variants_id: #{line_items_variants_id}"
 
             line_items_variants_id[:line_items_variants_id].each do |v|
 
               # !!!
-              # next if no_sub_prod.include?(v[:id]) && !localfile.include?("61")
+            next if !v[:sub]
 
-              variant = @products.map {|product| product.variants.select {|variant| variant.id.to_s == v[:id] }}.flatten.first
-              product =  @products.select{|product| product.variants.map{|variant| variant.id }.include?(v[:id].to_i) }.first
-
-              total_line_price = (v[:quantity].to_i * v[:price]).round(2)
-
-              p line_items[v[:id]] = {}
-              p line_items[v[:id]][:variant_id] = variant.id
-              p line_items[v[:id]][:quantity] = v[:quantity].to_i
-              p line_items[v[:id]][:price] = total_line_price
-              p line_items[v[:id]][:title] = product.title
-              p line_items[v[:id]][:variant_title] = variant.title
-              p line_items[v[:id]][:product_id] = product.id
-              p line_items[v[:id]][:sub] = v[:sub]
-
-              variant_id = v[:id]
-
-              next if variant_id.nil?
-              # DO WE?
-              # produit complementaire
-
-              line = line_items[variant_id]
-
-              p "almost -- #{lili[13]}"
-              p "almost -- #{lili[2]}"
-              p "almost -- #{}"
+            variant = @products.map {|product| product.variants.select {|variant| variant.id.to_s == v[:id] }}.flatten.first
+            product =  @products.select{|product| product.variants.map{|variant| variant.id }.include?(v[:id].to_i) }.first
 
 
-              recharge_line = []
-              if line[:sub]
-                recharge_line << rulseset_id
-              elsif localfile.include?("61")
-                recharge_line << unique_ruleset_id
-              end
+            line_items[v[:id]] = {}
+            line_items[v[:id]][:variant_id] = variant.id
+            line_items[v[:id]][:quantity] = v[:quantity].to_i
+            line_items[v[:id]][:price] = v[:price]
+            line_items[v[:id]][:title] = product.title
+            line_items[v[:id]][:variant_title] = variant.title
+            line_items[v[:id]][:product_id] = product.id
+            line_items[v[:id]][:sub] = v[:sub]
 
-              recharge_line << line[:title]
-              recharge_line << line[:variant_title]
-              recharge_line << line[:product_id]
-              recharge_line << line[:variant_id]
-              recharge_line << line[:quantity] #quantiy
-              recharge_line << line[:price] #recurring_prie
-              recharge_line << "Month" #charge_interval_unit_type
-              recharge_line << 2 #charge_interval_frequency
-              recharge_line << "Month" #shipping_interval_unit_type
-              recharge_line << 2 #shipping_interval_frequency
-              recharge_line << "no" #is_prepaid
+            variant_id = v[:id]
 
-              if localfile.include?("_61")
-                recharge_line << 27 #charge_on_day_of_month
-                recharge_line << ""  #last_charge_date
-                recharge_line << "01/27/2020" #next_charge_date
-              end
+            next if variant_id.nil?
+            # DO WE?
+            # produit complementaire
 
-              # recharge_line << DateTime.parse(lili[12]).strftime('%d') #charge_on_day_of_month
-              # recharge_line << DateTime.parse(lili[12]).strftime('%m/%d/%Y')  #last_charge_date
-              # recharge_line << (DateTime.parse(lili[12]) + 2.month).strftime('%m/%d/%Y') #next_charge_date
-
-              recharge_line << lili[6] #customer_stripe_id
-
-              recharge_line << "" #customer_created_at
-
-              recharge_line << lili[46] #shipping_email
-              recharge_line << lili[47] #shipping_first_name
-              recharge_line << lili[48] #shipping_last_name
-
-              recharge_line << lili[65] #shipping_phone
-
-              recharge_line << lili[52] #shipping_address_1
-              recharge_line << lili[53] #shipping_address_2
-              recharge_line << lili[55] #shipping_city
-              recharge_line << "" #shipping_province
-              recharge_line << lili[54] #shipping_zip
-
-
-              recharge_line << lili[62] #shipping_country
-              recharge_line << lili[64] #shipping_company
-
-
-              recharge_line << lili[57] #billing_first_name
-              recharge_line << lili[56] #billing_last_name
-              recharge_line << lili[58] #billing_address_1
-              recharge_line << lili[59] #billing_address_2
-              recharge_line << lili[61] #billing_city
-              recharge_line << lili[60] #billing_postalcode
-              recharge_line << "" #billing_province_state
-              recharge_line << "France" #billing_country
-
-
-              recharge_line << lili[66] #billing_phone
-
-              if localfile.include?("_61")
-                recharge_line << 'MIGRATION' #discount_code
-                recharge_line << lili[44] #original_shipping_title
-                recharge_line << 0 #original_shipping_price
-              else
-                recharge_line << '' #discount_code
-                recharge_line << lili[44] #original_shipping_title
-                recharge_line << lili[45] #original_shipping_price
-              end
+            line = line_items[variant_id]
 
 
 
 
-              csv_re << recharge_line
+            recharge_line = []
+            if line[:sub]
+              recharge_line << rulseset_id
+            elsif localfile.include?("61")
+              recharge_line << unique_ruleset_id
+            end
+
+            recharge_line << line[:title]
+            recharge_line << line[:variant_title]
+            recharge_line << line[:product_id]
+            recharge_line << line[:variant_id]
+            recharge_line << line[:quantity] #quantiy
+            recharge_line << line[:price] #recurring_prie
+            recharge_line << "Month" #charge_interval_unit_type
+            recharge_line << 2 #charge_interval_frequency
+            recharge_line << "Month" #shipping_interval_unit_type
+            recharge_line << 2 #shipping_interval_frequency
+            recharge_line << "no" #is_prepaid
+
+            if localfile.include?("_61") || localfile.include?("_64") || localfile.include?("_63")
+              recharge_line << 27 #charge_on_day_of_month
+              recharge_line << ""  #last_charge_date
+              recharge_line << "01/27/2020" #next_charge_date
+            else
+              recharge_line << 27 #charge_on_day_of_month
+              recharge_line << ""  #last_charge_date
+              recharge_line << "02/27/2020" #next_charge_date
+            end
+
+            # recharge_line << DateTime.parse(lili[12]).strftime('%d') #charge_on_day_of_month
+            # recharge_line << DateTime.parse(lili[12]).strftime('%m/%d/%Y')  #last_charge_date
+            # recharge_line << (DateTime.parse(lili[12]) + 2.month).strftime('%m/%d/%Y') #next_charge_date
+
+            recharge_line << lili[6] #customer_stripe_id
+
+            recharge_line << "" #customer_created_at
+
+            recharge_line << lili[46] #shipping_email
+            recharge_line << lili[47] #shipping_first_name
+            recharge_line << lili[48] #shipping_last_name
+
+            recharge_line << lili[65] #shipping_phone
+
+            recharge_line << lili[52] #shipping_address_1
+            recharge_line << lili[53] #shipping_address_2
+            recharge_line << lili[55] #shipping_city
+            recharge_line << "" #shipping_province
+            recharge_line << lili[54] #shipping_zip
 
 
+            recharge_line << lili[62] #shipping_country
+            recharge_line << lili[64] #shipping_company
 
+
+            recharge_line << lili[57] #billing_first_name
+            recharge_line << lili[56] #billing_last_name
+            recharge_line << lili[58] #billing_address_1
+            recharge_line << lili[59] #billing_address_2
+            recharge_line << lili[61] #billing_city
+            recharge_line << lili[60] #billing_postalcode
+            recharge_line << "" #billing_province_state
+            recharge_line << "France" #billing_country
+
+
+            recharge_line << lili[66] #billing_phone
+
+            if localfile.include?("_64") || localfile.include?('_67')
+              recharge_line << 'cancelled'
+            else
+              recharge_line << ''
             end
 
 
+            if localfile.include?("_61")
+              recharge_line << 'MIGRATION' #discount_code
+              recharge_line << lili[44] #original_shipping_title
+              recharge_line << 0 #original_shipping_price
+            else
+              recharge_line << '' #discount_code
+              recharge_line << lili[44] #original_shipping_title
+              recharge_line << lili[45] #original_shipping_price
+            end
+
+            csv_re << recharge_line
+            end
           end
         end
-        temp_file = Tempfile.new(file_name)
-        temp_file.write(csv_data)
-        temp_file.close
-        ftp.putbinaryfile(temp_file, file_name)
-        temp_file.unlink
-
       end
+      temp_file = Tempfile.new(file_name)
+      temp_file.write(csv_data)
+      temp_file.close
+      ftp.putbinaryfile(temp_file, file_name)
+      temp_file.unlink
     end
 
 
@@ -860,7 +851,7 @@
               p "line_items_variants_id: #{line_items_variants_id}"
               line_items = {}
               line_items_variants_id.each do |v|
-                next if v == "30734956232800" || v == "30734958559328" || v == "4422322946144"
+                next if v == "30734956232800" || v == "31660422135904" || v == "31622336217184"
 
                 variant = @products.map {|product| product.variants.select {|variant| variant.id.to_s == v }}.flatten.first
                 product =  @products.select{|product| product.variants.map{|variant| variant.id }.include?(v.to_i) }.first
@@ -890,7 +881,7 @@
               line_items_variants_id.uniq.each do |variant_id|
                 next if variant_id.nil?
                 # DO WE?
-                next if variant_id == "30734956232800" || variant_id == "30734958559328" || v == "4422322946144"
+                next if variant_id == "30734956232800" || variant_id == "31660422135904" || v == "31622336217184"
 
                 p "almost -- #{lili[13]}"
                 p "almost -- #{lili[2]}"
