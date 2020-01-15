@@ -638,7 +638,7 @@
             qq.first_name = cust.first_name
             qq.account_activation_url = cust.account_activation_url
             qq.shop_id = @shop.id
-            qq.save
+            ShopifyAPIRetry.retry { qq.save }
 
           else
             (p 'new')
