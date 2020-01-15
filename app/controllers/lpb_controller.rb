@@ -483,6 +483,7 @@
         ftp.getbinaryfile(file, localfile, @blocksize)
         csv = CSV.open(localfile, headers: false,liberal_parsing: true)
         csv.each_with_index do |line, i|
+          sleep(0.5)
           next if i == 0
           lili = line.join(',').to_s.gsub(/\"/, "").split(';')
           p lili
@@ -638,12 +639,12 @@
             qq.first_name = cust.first_name
             qq.account_activation_url = cust.account_activation_url
             qq.shop_id = @shop.id
-            ShopifyAPIRetry.retry { qq.save }
+            qq.save
 
           else
             (p 'new')
             p cus = ShopifyAPI::Customer.new(customer)
-            if cus.save
+            if ShopifyAPIRetry.retry { cus.save }
               Customer.create({
                 name: cus.last_name,
                 accepts_marketing: accepts_marketing.to_s,
