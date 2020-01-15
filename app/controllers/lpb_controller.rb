@@ -485,7 +485,7 @@
         csv.each_with_index do |line, i|
           next if i == 0
           lili = line.join(',').to_s.gsub(/\"/, "").split(';')
-
+          p lili
           next if lili[0].blank?
 
           ziqy_customer_id = lili[0]
@@ -494,6 +494,8 @@
           first_name = lili[10].present? ? lili[10].gsub(/,/,'') : nil
           last_name = lili[11].present? ? lili[11].gsub(/\,/,'') : nil
           email = lili[12]
+
+
 
           a_name = lili[39] #wrong
 
@@ -623,34 +625,37 @@
             send_email_invite: false,
             metafields: metafields
           }
-
+          p cust.id.present?
+          p '____'
 
           if cust.id.present?
             (customer[:id] = cust.id)
-            Customer.create({
-              name: cust.last_name,
-              accepts_marketing: accepts_marketing.to_s,
-              email: cust.email,
-              first_name: cust.first_name,
-              account_activation_url: cust.account_activation_url,
-              shop_id: @shop.id
-            })
+            next if cust.state == "enabled"
+            qq = Customer.new
+            qq.name = cust.last_name
+            qq.accepts_marketing = accepts_marketing.to_s
+            qq.email = cust.email
+            qq.first_name = cust.first_name
+            qq.account_activation_url = cust.account_activation_url
+            qq.shop_id = @shop.id
+            qq.save
+
           else
             (p 'new')
+            p cus = ShopifyAPI::Customer.new(customer)
+            if cus.save
+              Customer.create({
+                name: cus.last_name,
+                accepts_marketing: accepts_marketing.to_s,
+                email: cus.email,
+                first_name: cus.first_name,
+                account_activation_url: cus.account_activation_url,
+                shop_id: @shop.id
+              })
+            end
           end
-          sleep(0.5)
 
-          p cus = ShopifyAPI::Customer.new(customer)
-          if cus.save
-            Customer.create({
-              name: cus.last_name,
-              accepts_marketing: accepts_marketing.to_s,
-              email: cus.email,
-              first_name: cus.first_name,
-              account_activation_url: cus.account_activation_url,
-              shop_id: @shop.id
-            })
-          end
+
 
 
         end
