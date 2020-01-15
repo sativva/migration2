@@ -373,7 +373,7 @@
           total_line_price += (lili[40].to_f) * lili[33].to_i
       end
       if lili[34].to_i > 0
-          line_items_variants_id << {id: "30734956232800", price: (lili[41].to_f), quantity: lili[34]}
+          line_items_variants_id << {id: "31718115115104", price: (lili[41].to_f), quantity: lili[34]}
           total_line_price += (lili[41].to_f) * lili[34].to_i
       end
       if lili[43].to_i > 0
@@ -449,7 +449,7 @@
               total_line_price += (lili[39].to_f * 1.2) * lili[32].to_i
           end
           if lili[33].to_i > 0
-              line_items_variants_id << {id: "30734956232800", price: (lili[40].to_f * 1.2), quantity: lili[33]}
+              line_items_variants_id << {id: "31718115115104", price: (lili[40].to_f * 1.2), quantity: lili[33]}
               total_line_price += (lili[40].to_f * 1.2) * lili[33].to_i
           end
           if lili[42].to_i > 0
@@ -461,7 +461,6 @@
           if total_line_price.round(2) != lili[7].to_f.round(2)
             discount = total_line_price - lili[7].to_f
           end
-
 
           p result = {line_items_variants_id: line_items_variants_id, discount: discount}
     end
@@ -483,7 +482,7 @@
         localfile = File.basename(file)
         ftp.getbinaryfile(file, localfile, @blocksize)
         csv = CSV.open(localfile, headers: false,liberal_parsing: true)
-        csv.drop(6350).each_with_index do |line, i|
+        csv.drop(8000).each_with_index do |line, i|
           sleep(0.5)
           next if i == 0
           lili = line.join(',').to_s.gsub(/\"/, "").split(';')
@@ -667,7 +666,11 @@
     def create_recharge_csv_2
       rulseset_id = "225483"
       unique_ruleset_id = "227711"
-      prod_comp = %w(31622336217184 30734956232800 31660422135904)
+      #  doseur p_id 4259267772512 v_id 31718115115104
+      #  detachant p_id 4422322946144 v_id 31622336217184
+      #  terre de sommieres v_id 31660422135904
+      prod_comp = %w(31718115115104 31622336217184 31660422135904)
+      # prod_comp = %w(31622336217184 31718115115104 31660422135904)
       lessive_one_time = %w(31511698800736 31511636541536 31512643371104 31512664277088 31512649564256)
       no_sub_prod = prod_comp + lessive_one_time
 
@@ -750,7 +753,7 @@
             recharge_line << line[:product_id]
             recharge_line << line[:variant_id]
             recharge_line << line[:quantity] #quantiy
-            recharge_line << line[:price] #recurring_prie
+            recharge_line << line[:price].round(2) #recurring_prie
             recharge_line << "Month" #charge_interval_unit_type
             recharge_line << 2 #charge_interval_frequency
             recharge_line << "Month" #shipping_interval_unit_type
@@ -798,7 +801,7 @@
             recharge_line << lili[59] #billing_address_2
             recharge_line << lili[61] #billing_city
             recharge_line << lili[60] #billing_postalcode
-            recharge_line << "" #billing_province_state
+            recharge_line << "--" #billing_province_state
             recharge_line << "France" #billing_country
 
 
@@ -870,7 +873,7 @@
               p "line_items_variants_id: #{line_items_variants_id}"
               line_items = {}
               line_items_variants_id.each do |v|
-                next if v == "30734956232800" || v == "31660422135904" || v == "31622336217184"
+                next if v == "31718115115104" || v == "31660422135904" || v == "31622336217184"
 
                 variant = @products.map {|product| product.variants.select {|variant| variant.id.to_s == v }}.flatten.first
                 product =  @products.select{|product| product.variants.map{|variant| variant.id }.include?(v.to_i) }.first
@@ -900,7 +903,7 @@
               line_items_variants_id.uniq.each do |variant_id|
                 next if variant_id.nil?
                 # DO WE?
-                next if variant_id == "30734956232800" || variant_id == "31660422135904" || v == "31622336217184"
+                next if variant_id == "31718115115104" || variant_id == "31660422135904" || v == "31622336217184"
 
                 p "almost -- #{lili[13]}"
                 p "almost -- #{lili[2]}"
