@@ -39,8 +39,9 @@
         # }
 
         csv = CSV.open(localfile, headers: false, liberal_parsing: true)
-        csv = csv.first(6350)
-        csv.each_with_index do |line, i|
+
+
+        csv.drop(6350).first(1000).each_with_index do |line, i|
           next if i == 0
 
           lili = line.join(',').to_s.gsub(/\"/, "").split(';')
