@@ -39,7 +39,7 @@
         # }
 
         csv = CSV.open(localfile, headers: false, liberal_parsing: true)
-        csv = csv.first(4100)
+        csv = csv.first(6350)
         csv.each_with_index do |line, i|
           next if i == 0
 
