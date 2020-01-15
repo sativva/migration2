@@ -482,7 +482,7 @@
         localfile = File.basename(file)
         ftp.getbinaryfile(file, localfile, @blocksize)
         csv = CSV.open(localfile, headers: false,liberal_parsing: true)
-        csv.drop(9500).each_with_index do |line, i|
+        csv.drop(11100).each_with_index do |line, i|
           sleep(0.5)
           next if i == 0
           lili = line.join(',').to_s.gsub(/\"/, "").split(';')
@@ -724,7 +724,7 @@
             line_items[v[:id]] = {}
             line_items[v[:id]][:variant_id] = variant.id
             line_items[v[:id]][:quantity] = v[:quantity].to_i
-            line_items[v[:id]][:price] = v[:price]
+            line_items[v[:id]][:price] = 9.92
             line_items[v[:id]][:title] = product.title
             line_items[v[:id]][:variant_title] = variant.title
             line_items[v[:id]][:product_id] = product.id
@@ -819,9 +819,10 @@
               recharge_line << lili[44] #original_shipping_title
               recharge_line << 0 #original_shipping_price
             else
+              ship_price = (lili[44].downcase.include?('colissimo') ? 5.9 : 0 )
               recharge_line << '' #discount_code
               recharge_line << lili[44] #original_shipping_title
-              recharge_line << lili[45] #original_shipping_price
+              recharge_line << ship_price
             end
 
             csv_re << recharge_line
