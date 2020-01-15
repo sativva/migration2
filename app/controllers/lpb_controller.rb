@@ -482,7 +482,7 @@
         localfile = File.basename(file)
         ftp.getbinaryfile(file, localfile, @blocksize)
         csv = CSV.open(localfile, headers: false,liberal_parsing: true)
-        csv.drop(12700).each_with_index do |line, i|
+        csv.drop(13650).each_with_index do |line, i|
           sleep(0.5)
           next if i == 0
           lili = line.join(',').to_s.gsub(/\"/, "").split(';')
@@ -1014,6 +1014,25 @@
       @shop = Shop.where(shopify_domain: params[:shopify_domain]).first
       @shop.connect_to_store
 
+    end
+
+    def table_to_csv
+      csv_string = CSV.generate do |csv|
+        csv << Customer.attribute_names
+        Customer.find_each do |customer|
+          csv << customer.attributes.values
+        end
+      end
+      set_FTP_settings
+
+      ftp = Net::FTP.new(@hostname, @username, @password)
+      ftp.chdir(@folder)
+
+      temp_file = Tempfile.new('activelinks')
+      temp_file.write(csv_string)
+      temp_file.close
+      ftp.putbinaryfile(temp_file, 'activelinks')
+      temp_file.unlink
     end
 
   end
