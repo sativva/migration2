@@ -482,7 +482,7 @@
         localfile = File.basename(file)
         ftp.getbinaryfile(file, localfile, @blocksize)
         csv = CSV.open(localfile, headers: false,liberal_parsing: true)
-        csv.drop(14150).each_with_index do |line, i|
+        csv.first(500).each_with_index do |line, i|
           sleep(0.5)
           next if i == 0
           lili = line.join(',').to_s.gsub(/\"/, "").split(';')
