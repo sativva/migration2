@@ -42,6 +42,7 @@ require 'date'
         if customer.created_at.to_date < "2020-01-14T23:52:14+01:00".to_date
           if customer.state == 'disabled'
             ShopifyAPIRetry.retry { customer.send_invite }
+            p customer.email
           end
         end
       end
