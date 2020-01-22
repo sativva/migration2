@@ -27,7 +27,7 @@ require 'date'
 
     def send_bulk_invite
       set_session
-      two_fifty = ShopifyAPIRetry.retry { ShopifyAPI::Customer.find(:all, params: {limit: 250})}
+      two_fifty = ShopifyAPIRetry.retry { ShopifyAPI::Customer.find(:all, params: {limit: 250, state: 'disabled'})}
       all_customers = two_fifty
 
       while two_fifty.count == 250
