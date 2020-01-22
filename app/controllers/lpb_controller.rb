@@ -4,7 +4,7 @@
     layout "application"
     before_action :set_session
     before_action :get_products, only: %w(import_orders create_recharge_csv create_recharge_csv_2)
-
+    before_action :token, only: %w(add_single_products)
     require "shopify_api_retry"
     require 'faker'
     require 'nokogiri'
@@ -17,6 +17,26 @@
     # ooos = ShopifyAPI::Order.find(:all, params:{status: "any"})
     # ooos.select {|o| o.name.include?('ZIQY')}.each {|o| o.destroy }
 
+    def send_bulk_invite
+      two_fifty = ShopifyAPIRetry.retry { ShopifyAPI::Customer.find(:all, params: {limit: 250})}
+      all_customers = two_fifty
+
+      while two_fifty.count == 250
+        puts 'next page____'
+        sleep(0.5)
+        two_fifty = ShopifyAPIRetry.retry { two_fifty.fetch_next_page }
+        all_customers << two_fifty
+        p all_customers.flatten.count
+      end
+
+      all_customers.each do |customer|
+        if all_customers.first.created_at.to_date < "2020-01-14T23:52:14+01:00".to_date
+          if customer.state == 'disabled'
+            ShopifyAPIRetry.retry { customer.send_invite }
+          end
+        end
+      end
+    end
     #(sql 47, 49, 57, 59)
     def import_orders
       set_FTP_settings
@@ -27,8 +47,10 @@
       ftp.chdir(@folder)
       files = ftp.nlst('*.csv')
       files.each do |file|
-        next unless file.include?('orders')
-        localfile = File.basename(file)
+        # next unless file.include?('_47') || file.include?('_49') || file.include?('_57') || file.include?('_59')
+        next unless file.include?('_59')
+
+        p localfile = File.basename(file)
         ftp.getbinaryfile(file, localfile, @blocksize)
         # CSV::Converters[:my_converters] = lambda{ |field3|
         #   begin
@@ -41,13 +63,13 @@
         csv = CSV.open(localfile, headers: false, liberal_parsing: true)
 
 
-        csv.drop(6350).first(1000).each_with_index do |line, i|
+        csv.each_with_index do |line, i|
           next if i == 0
 
           lili = line.join(',').to_s.gsub(/\"/, "").split(';')
           p lili.length
 
-          p csv[i]
+          p lili
           next if lili.length == 20
 
           if lili.length == 65
@@ -82,7 +104,7 @@
 
           order_date = DateTime.parse(lili[10])
           date_first_export = DateTime.parse("2019-12-19 15:00:31")
-          next if order_date > date_first_export
+          next if order_date < date_first_export
           tags = "REFZIQY|#{lili[2]}, IDZIQY|#{lili[1]} "
           tags += lili[4].to_i.zero? ?   ", Eshop" : ", Subscription "
           tags += lili[6].to_i.zero? ?  "" : ", Carte Cadeau "
@@ -391,6 +413,7 @@
     end
 
 
+
     def lpb_products(lili)
           p "lpb_products"
           line_items_variants_id = []
@@ -663,181 +686,6 @@
       end
     end
 
-    def create_recharge_csv_2
-      rulseset_id = "225483"
-      unique_ruleset_id = "227711"
-      #  doseur p_id 4259267772512 v_id 31718115115104
-      #  detachant p_id 4422322946144 v_id 31622336217184
-      #  terre de sommieres v_id 31660422135904
-      prod_comp = %w(31718115115104 31622336217184 31660422135904)
-      # prod_comp = %w(31622336217184 31718115115104 31660422135904)
-      lessive_one_time = %w(31511698800736 31511636541536 31512643371104 31512664277088 31512649564256)
-      no_sub_prod = prod_comp + lessive_one_time
-
-      set_FTP_settings
-      today = Time.now
-
-      file_name = "lpb_recharge_#{today.strftime('%Y%m%d_%H%M%S')}.csv"
-
-      ftp = Net::FTP.new(@hostname, @username, @password)
-      ftp.chdir(@folder)
-      files = ftp.nlst('*.csv')
-      csv_data = CSV.generate(col_sep: ";") do |csv_re|
-        csv_re << %w(subscription_id shopify_product_name shopify_variant_name shopify_product_id  shopify_variant_id  quantity  recurring_price charge_interval_unit_type charge_interval_frequency shipping_interval_unit_type shipping_interval_frequency is_prepaid  charge_on_day_of_month  last_charge_date  next_charge_date  customer_stripe_id  customer_created_at shipping_email  shipping_first_name shipping_last_name  shipping_phone  shipping_address_1  shipping_address_2  shipping_city shipping_province shipping_zip  shipping_country  shipping_company  billing_first_name  billing_last_name billing_address_1 billing_address_2 billing_city  billing_postalcode  billing_province_state  billing_country billing_phone status discount_code original_shipping_title original_shipping_price)
-
-        files.each do |file|
-          # Requete 61 paid but not delivery february
-          next unless file.include?('_61') || file.include?('_63') || file.include?('_64') || file.include?('_66') || file.include?('_67')
-          p file
-          localfile = File.basename(file)
-          ftp.getbinaryfile(file, localfile, @blocksize)
-
-          csv_commandes = CSV.open(localfile, headers: false,liberal_parsing: true)
-
-
-          mails_to_skip = []
-          csv_commandes.each_with_index do |line, i|
-            # p mails_to_skip
-            lili = line.join(',').to_s.gsub(/\"/, "").gsub(/\"/, ",").split(';')
-
-            next if i == 0
-
-
-            # p "__________new____________"
-
-
-
-            line_items = {}
-
-            line_items_variants_id = lpb_products_recharge(lili)
-            # p "line_items_variants_id: #{line_items_variants_id}"
-
-            line_items_variants_id[:line_items_variants_id].each do |v|
-
-              # !!!
-            next if !v[:sub]
-
-            variant = @products.map {|product| product.variants.select {|variant| variant.id.to_s == v[:id] }}.flatten.first
-            product =  @products.select{|product| product.variants.map{|variant| variant.id }.include?(v[:id].to_i) }.first
-
-
-            line_items[v[:id]] = {}
-            line_items[v[:id]][:variant_id] = variant.id
-            line_items[v[:id]][:quantity] = v[:quantity].to_i
-            line_items[v[:id]][:price] = 9.92
-            line_items[v[:id]][:title] = product.title
-            line_items[v[:id]][:variant_title] = variant.title
-            line_items[v[:id]][:product_id] = product.id
-            line_items[v[:id]][:sub] = v[:sub]
-
-            variant_id = v[:id]
-
-            next if variant_id.nil?
-            # DO WE?
-            # produit complementaire
-
-            line = line_items[variant_id]
-
-
-
-
-            recharge_line = []
-            if line[:sub]
-              recharge_line << rulseset_id
-            elsif localfile.include?("61")
-              recharge_line << unique_ruleset_id
-            end
-
-            recharge_line << line[:title]
-            recharge_line << line[:variant_title]
-            recharge_line << line[:product_id]
-            recharge_line << line[:variant_id]
-            recharge_line << line[:quantity] #quantiy
-            recharge_line << line[:price].round(2) #recurring_prie
-            recharge_line << "Month" #charge_interval_unit_type
-            recharge_line << 2 #charge_interval_frequency
-            recharge_line << "Month" #shipping_interval_unit_type
-            recharge_line << 2 #shipping_interval_frequency
-            recharge_line << "no" #is_prepaid
-
-            if localfile.include?("_61") || localfile.include?("_64") || localfile.include?("_63")
-              recharge_line << 27 #charge_on_day_of_month
-              recharge_line << ""  #last_charge_date
-              recharge_line << "01/27/2020" #next_charge_date
-            else
-              recharge_line << 27 #charge_on_day_of_month
-              recharge_line << ""  #last_charge_date
-              recharge_line << "02/27/2020" #next_charge_date
-            end
-
-            # recharge_line << DateTime.parse(lili[12]).strftime('%d') #charge_on_day_of_month
-            # recharge_line << DateTime.parse(lili[12]).strftime('%m/%d/%Y')  #last_charge_date
-            # recharge_line << (DateTime.parse(lili[12]) + 2.month).strftime('%m/%d/%Y') #next_charge_date
-
-            recharge_line << lili[6] #customer_stripe_id
-
-            recharge_line << "" #customer_created_at
-
-            recharge_line << lili[46] #shipping_email
-            recharge_line << lili[47] #shipping_first_name
-            recharge_line << lili[48] #shipping_last_name
-
-            recharge_line << lili[65] #shipping_phone
-
-            recharge_line << lili[52] #shipping_address_1
-            recharge_line << lili[53] #shipping_address_2
-            recharge_line << lili[55] #shipping_city
-            recharge_line << "" #shipping_province
-            recharge_line << lili[54] #shipping_zip
-
-
-            recharge_line << lili[62] #shipping_country
-            recharge_line << lili[64] #shipping_company
-
-
-            recharge_line << lili[57] #billing_first_name
-            recharge_line << lili[56] #billing_last_name
-            recharge_line << lili[58] #billing_address_1
-            recharge_line << lili[59] #billing_address_2
-            recharge_line << lili[61] #billing_city
-            recharge_line << lili[60] #billing_postalcode
-            recharge_line << "--" #billing_province_state
-            recharge_line << "France" #billing_country
-
-
-            recharge_line << lili[66] #billing_phone
-
-            if localfile.include?("_64") || localfile.include?('_67')
-              recharge_line << 'cancelled'
-            else
-              recharge_line << ''
-            end
-
-
-            if localfile.include?("_61")
-              recharge_line << 'MIGRATION' #discount_code
-              recharge_line << lili[44] #original_shipping_title
-              recharge_line << 0 #original_shipping_price
-            else
-              ship_price = (lili[44].downcase.include?('colissimo') ? 5.9 : 0 )
-              recharge_line << '' #discount_code
-              recharge_line << lili[44] #original_shipping_title
-              recharge_line << ship_price
-            end
-
-            csv_re << recharge_line
-            end
-          end
-        end
-      end
-      temp_file = Tempfile.new(file_name)
-      temp_file.write(csv_data)
-      temp_file.close
-      ftp.putbinaryfile(temp_file, file_name)
-      temp_file.unlink
-    end
-
-
     def create_recharge_csv
       set_FTP_settings
       today = Time.now
@@ -979,6 +827,343 @@
       end
     end
 
+    def create_recharge_csv_2
+      rulseset_id = "225483"
+      unique_ruleset_id = "227711"
+      #  doseur p_id 4259267772512 v_id 31718115115104
+      #  detachant p_id 4422322946144 v_id 31622336217184
+      #  terre de sommieres v_id 31660422135904
+      prod_comp = %w(31718115115104 31622336217184 31660422135904)
+      # prod_comp = %w(31622336217184 31718115115104 31660422135904)
+      lessive_one_time = %w(31511698800736 31511636541536 31512643371104 31512664277088 31512649564256)
+      no_sub_prod = prod_comp + lessive_one_time
+
+      set_FTP_settings
+      today = Time.now
+
+      file_name = "lpb_recharge_#{today.strftime('%Y%m%d_%H%M%S')}.csv"
+
+      ftp = Net::FTP.new(@hostname, @username, @password)
+      ftp.chdir(@folder)
+      files = ftp.nlst('*.csv')
+      csv_data = CSV.generate(col_sep: ";") do |csv_re|
+        csv_re << %w(subscription_id shopify_product_name shopify_variant_name shopify_product_id  shopify_variant_id  quantity  recurring_price charge_interval_unit_type charge_interval_frequency shipping_interval_unit_type shipping_interval_frequency is_prepaid  charge_on_day_of_month  last_charge_date  next_charge_date  customer_stripe_id  customer_created_at shipping_email  shipping_first_name shipping_last_name  shipping_phone  shipping_address_1  shipping_address_2  shipping_city shipping_province shipping_zip  shipping_country  shipping_company  billing_first_name  billing_last_name billing_address_1 billing_address_2 billing_city  billing_postalcode  billing_province_state  billing_country billing_phone status discount_code original_shipping_title original_shipping_price)
+
+        files.each do |file|
+          # Requete 61 paid but not delivery february
+          next unless file.include?('_61') || file.include?('_63') || file.include?('_64') || file.include?('_66') || file.include?('_67')
+          p file
+          localfile = File.basename(file)
+          ftp.getbinaryfile(file, localfile, @blocksize)
+
+          csv_commandes = CSV.open(localfile, headers: false,liberal_parsing: true)
+
+
+          mails_to_skip = []
+          csv_commandes.each_with_index do |line, i|
+            # p mails_to_skip
+            lili = line.join(',').to_s.gsub(/\"/, "").gsub(/\"/, ",").split(';')
+
+            next if i == 0
+
+
+            # p "__________new____________"
+
+
+
+            line_items = {}
+
+            line_items_variants_id = lpb_products_recharge(lili)
+            # p "line_items_variants_id: #{line_items_variants_id}"
+
+            line_items_variants_id[:line_items_variants_id].each do |v|
+
+              # !!!
+            next if !v[:sub]
+
+            variant = @products.map {|product| product.variants.select {|variant| variant.id.to_s == v[:id] }}.flatten.first
+            product =  @products.select{|product| product.variants.map{|variant| variant.id }.include?(v[:id].to_i) }.first
+
+
+            line_items[v[:id]] = {}
+            line_items[v[:id]][:variant_id] = variant.id
+            line_items[v[:id]][:quantity] = v[:quantity].to_i
+            line_items[v[:id]][:price] = 11.90
+            line_items[v[:id]][:title] = product.title
+            line_items[v[:id]][:variant_title] = variant.title
+            line_items[v[:id]][:product_id] = product.id
+            line_items[v[:id]][:sub] = v[:sub]
+
+            variant_id = v[:id]
+
+            next if variant_id.nil?
+            # DO WE?
+            # produit complementaire
+
+            line = line_items[variant_id]
+
+
+
+
+            recharge_line = []
+            if line[:sub]
+              recharge_line << rulseset_id
+            elsif localfile.include?("61")
+              recharge_line << unique_ruleset_id
+            end
+
+            recharge_line << line[:title]
+            recharge_line << line[:variant_title]
+            recharge_line << line[:product_id]
+            recharge_line << line[:variant_id]
+            recharge_line << line[:quantity] #quantiy
+            # recharge_line << line[:price].round(2) #recurring_price
+            recharge_line << 11.9 #recurring_price
+
+            recharge_line << "Month" #charge_interval_unit_type
+            recharge_line << 2 #charge_interval_frequency
+            recharge_line << "Month" #shipping_interval_unit_type
+            recharge_line << 2 #shipping_interval_frequency
+            recharge_line << "no" #is_prepaid
+
+            if localfile.include?("_61") || localfile.include?("_64") || localfile.include?("_63")
+              recharge_line << 27 #charge_on_day_of_month
+              recharge_line << ""  #last_charge_date
+              recharge_line << "01/27/2020" #next_charge_date
+            else
+              recharge_line << 27 #charge_on_day_of_month
+              recharge_line << ""  #last_charge_date
+              recharge_line << "02/27/2020" #next_charge_date
+            end
+
+            # recharge_line << DateTime.parse(lili[12]).strftime('%d') #charge_on_day_of_month
+            # recharge_line << DateTime.parse(lili[12]).strftime('%m/%d/%Y')  #last_charge_date
+            # recharge_line << (DateTime.parse(lili[12]) + 2.month).strftime('%m/%d/%Y') #next_charge_date
+
+            recharge_line << lili[6] #customer_stripe_id
+
+            recharge_line << "" #customer_created_at
+
+            recharge_line << lili[46] #shipping_email
+            recharge_line << lili[47] #shipping_first_name
+            recharge_line << lili[48] #shipping_last_name
+
+            recharge_line << lili[65] #shipping_phone
+
+            recharge_line << lili[52] #shipping_address_1
+            recharge_line << lili[53] #shipping_address_2
+            recharge_line << lili[55] #shipping_city
+            recharge_line << "" #shipping_province
+            recharge_line << lili[54] #shipping_zip
+
+
+            recharge_line << lili[62] #shipping_country
+            recharge_line << lili[64] #shipping_company
+
+
+            recharge_line << lili[57] #billing_first_name
+            recharge_line << lili[56] #billing_last_name
+            recharge_line << lili[58] #billing_address_1
+            recharge_line << lili[59] #billing_address_2
+            recharge_line << lili[61] #billing_city
+            recharge_line << lili[60] #billing_postalcode
+            recharge_line << "--" #billing_province_state
+            recharge_line << "France" #billing_country
+
+
+            recharge_line << lili[66] #billing_phone
+
+            if localfile.include?("_64") || localfile.include?('_67')
+              recharge_line << 'cancelled'
+            else
+              recharge_line << ''
+            end
+            if lili[44].downcase.include?('colissimo')
+              shipping_title = "Colissimo Domicile sans signature"
+            elsif lili[44].downcase.include?('mondial')
+              shipping_title = "Mondial Relay Gratuit (choix du point relais après paiement)"
+            else
+              shipping_title =  "Click & Collect - Dans nos bureaux (Paris 11ème) les lundis de 17h à 20h"
+            end
+
+            if localfile.include?("_61")
+              recharge_line << 'MIGRATION' #discount_code
+              recharge_line << shipping_title #original_shipping_title
+              recharge_line << 0 #original_shipping_price
+            else
+              ship_price = (lili[44].downcase.include?('colissimo') ? 5.9 : 0 )
+              recharge_line << '' #discount_code
+              recharge_line << shipping_title #original_shipping_title
+              recharge_line << ship_price
+            end
+
+            csv_re << recharge_line
+            end
+          end
+        end
+      end
+      temp_file = Tempfile.new(file_name)
+      temp_file.write(csv_data)
+      temp_file.close
+      ftp.putbinaryfile(temp_file, file_name)
+      temp_file.unlink
+    end
+
+
+    def lpb_products_single_upsell(lili)
+      line_items_variants_id = []
+      #fleurs blanches
+      if lili[7].to_i > 0
+        line_items_variants_id << {id: "31511698800736", quantity: lili[7], p_id: "4259268067424"}
+      end
+
+      #eucalyptus
+
+      if lili[8].to_i > 0
+          line_items_variants_id << {id: "31511636541536", quantity: lili[8], p_id: "4259267936352"}
+      end
+
+      if lili[9].to_i > 0
+          line_items_variants_id << {id: "31512643371104", quantity: lili[9], p_id: "4259267838048"}
+      end
+
+      if lili[10].to_i > 0
+          line_items_variants_id << {id: "31512664277088",  quantity: lili[10], p_id: "4259267903584"}
+      end
+
+      if lili[11].to_i > 0
+          line_items_variants_id << {id: "31512649564256", quantity: lili[11], p_id: "4259268001888"}
+      end
+
+      if lili[12].to_i > 0
+          line_items_variants_id << {id: "31660422135904", qantity: lili[12]}
+      end
+      if lili[13].to_i > 0
+          line_items_variants_id << {id: "31718115115104", quantity: lili[13]}
+      end
+      if lili[14].to_i > 0
+          line_items_variants_id << {id: "31622336217184",  quantity: lili[14]}
+
+      end
+
+
+
+
+      result = {line_items_variants_id: line_items_variants_id}
+    end
+
+    # REQ 68
+    def add_single_products
+      set_FTP_settings
+      get_products
+      token
+
+
+      ftp = Net::FTP.new(@hostname, @username, @password)
+      ftp.chdir(@folder)
+      files = ftp.nlst('*.csv')
+      email_to_skip = %w(winke01@orange.fr clairemado06210@gmail.com cyrilneves@gmail.com roy.nadia@wanadoo.fr benjamin.lemaile@gmail.com cyrilneves@gmail.com tidougirl@hotmail.com asmermier@gmail.com ab@feed.co mserrand@kermarrec-vitre.fr alexandra_laurent@msn.com alexandra.vigneron@jumalovi.fr renouf.severine@orange.fr camillefiaschi@gmail.com martysebastient03@yahoo.fr sophjuli@yahoo.fr caroline.ducorps@lilo.org anne.ubassy@gmail.com caroline.ducorps@lilo.org caroline.ducorps@lilo.org anne.evene@gmail.com stephnboo@gmail.com olboulogne@orange.fr kdauzout@gmail.com renouf.severine@orange.fr roy.nadia@wanadoo.fr triskell1@free.fr sophjuli@yahoo.fr alixmb21@gmail.com anne.evene@gmail.com tournaudcatherine@orange.fr mme.maiteduriez@gmail.com marine.fourniol@gmx.fr berges.natacha@gmail.com marielichtenberger93@gmail.com lecaerchristelle@gmail.com vincent.Redrado@gmail.com sabiglohrja@outlook.fr alexandra.vigneron@jumalovi.fr caroline.ducorps@lilo.org asmermier@gmail.com alexandra_laurent@msn.com berges.natacha@gmail.com ichbindadurch@hotmail.fr anne.evene@gmail.com tournaudcatherine@orange.fr lopibushido@gmail.com renouf.severine@orange.fr mathilde.besnier17@gmail.com marine.fourniol@gmx.fr cyrilneves@gmail.com laurence_parison@hotmail.com natalie.pinoche@agencediva.fr joelle.campos@orange.fr solfarinn@hotmail.com)
+      files.each do |file|
+        next unless file.include?('_68')
+
+        localfile = File.basename(file)
+        ftp.getbinaryfile(file, localfile, @blocksize)
+        csv = CSV.open(localfile, headers: false, liberal_parsing: true)
+        # line = csv.first(10).last
+        csv.each_with_index do |line, i|
+          next if i == 0
+          lili = line.join(',').to_s.gsub(/\"/, "").split(';')
+          p lili[6]
+          next if email_to_skip.include?(lili[6])
+          email_to_skip << lili[6]
+
+          line_items_variants_id = lpb_products_single_upsell(lili)
+          p line_items_variants_id
+          # winke01@orange.fr
+          p 'get customer'
+          url = URI("https://api.rechargeapps.com/customers?email=#{lili[6]}")
+          customer = JSON.parse(api_get(url).read_body)
+          p customer
+          sleep(1.5)
+          customer = customer['customers'].first
+          p customer['id']
+          sleep(1.5)
+          p customer
+
+          p 'get charge'
+          url = URI("https://api.rechargeapps.com/charges?customer_id=#{customer['id']}")
+          charges = JSON.parse(api_get(url).read_body)
+          charges =  charges['charges'].select {|c| c['status'] == 'QUEUED' }
+          p charges
+          sleep(0.5)
+          p 'get addresses'
+
+          url = URI("https://api.rechargeapps.com/addresses/#{charges[0]['address_id']}/")
+          addresses = JSON.parse(api_get(url).read_body)
+          p addresses
+
+          sleep(0.5)
+          p 'get subscription'
+          url = URI("https://api.rechargeapps.com/subscriptions?customer_id=#{customer['id']}")
+          subscription =  JSON.parse(api_get(url).read_body)
+          p subscription
+
+
+          address_id = addresses['address']['id']
+          next_charge_scheduled_at = subscription['subscriptions'].select {|sub| sub['status'] == 'ACTIVE' }.sort  {|sub| sub['next_charge_scheduled_at'].to_date }.map {|sub| sub['next_charge_scheduled_at']}.uniq.compact[0]
+
+          line_items_variants_id[:line_items_variants_id].each do |item|
+            quantity = item[:quantity]
+            variant_id = item[:id]
+            p quantity
+            p variant_id
+            upsells(address_id, next_charge_scheduled_at, quantity, variant_id)
+            sleep(0.5)
+          end
+
+
+
+        end
+      end
+    end
+
+    def upsells(address_id, next_charge_scheduled_at, quantity, variant_id)
+      p 'hoho'
+      url = URI("https://api.rechargeapps.com/addresses/#{address_id}/onetimes")
+      # url = URI("https://api.rechargeapps.com/subscriptions")
+
+      responses = []
+      http = Net::HTTP.new(url.host, url.port)
+      http.use_ssl = true
+      request = Net::HTTP::Post.new(url)
+      request["x-recharge-access-token"] = @token
+      request["content-type"] = 'application/json'
+      request.body = {
+                "next_charge_scheduled_at": next_charge_scheduled_at,
+                "price": 0.0001,
+                "quantity": quantity,
+                "shopify_variant_id": variant_id
+        }.to_json
+      # request.body = {
+      #       "address_id": address_id,
+      #       "next_charge_scheduled_at": next_charge_scheduled_at,
+      #       "price": 0,
+      #       "quantity": quantity,
+      #       "shopify_variant_id": variant_id,
+      #       "order_interval_unit": "day",
+      #       "order_interval_frequency": "30",
+      #       "expire_after_specific_number_of_charges": 1,
+      #       "charge_interval_frequency": "30"
+      # }.to_json
+      response = http.request(request)
+      responses << response.read_body
+
+      p responses
+      # json_response({
+      #   upsell: responses, status: "ok"
+      # })
+    end
+
 
 
     def get_products
@@ -1016,6 +1201,10 @@
 
     end
 
+    def token
+      @token = '02df4cc32b0b2f587fd7284ef137e455bebfc9e54f686cc035fedca1'
+    end
+
     def table_to_csv
       csv_string = CSV.generate do |csv|
         csv << Customer.attribute_names
@@ -1033,6 +1222,17 @@
       temp_file.close
       ftp.putbinaryfile(temp_file, 'activelinks')
       temp_file.unlink
+    end
+
+    def api_get(url)
+      http = Net::HTTP.new(url.host, url.port)
+      http.use_ssl = true
+
+      request = Net::HTTP::Get.new(url)
+      request["x-recharge-access-token"] = @token
+      request["content-type"] = 'application/json'
+      p request
+      response = http.request(request)
     end
 
   end

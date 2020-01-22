@@ -10,6 +10,13 @@ task import_orders: :environment do
   puts 'done.'
 end
 
+task bulk: :environment do
+  puts 'launching console'
+  send_bulk_invite
+  puts 'done.'
+end
+
+
 
 require "shopify_api_retry"
 require 'faker'
@@ -17,6 +24,28 @@ require 'nokogiri'
 require 'net/ftp'
 require 'csv'
 require 'date'
+
+    def send_bulk_invite
+      set_session
+      two_fifty = ShopifyAPIRetry.retry { ShopifyAPI::Customer.find(:all, params: {limit: 250})}
+      all_customers = two_fifty
+
+      while two_fifty.count == 250
+        puts 'next page____'
+        sleep(0.5)
+        two_fifty = ShopifyAPIRetry.retry { two_fifty.fetch_next_page }
+        all_customers << two_fifty
+        p all_customers.flatten.count
+      end
+
+      all_customers.flatten.each do |customer|
+        if all_customers.first.created_at.to_date < "2020-01-14T23:52:14+01:00".to_date
+          if customer.state == 'disabled'
+            ShopifyAPIRetry.retry { customer.send_invite }
+          end
+        end
+      end
+    end
 
     def import_orders
       set_session
