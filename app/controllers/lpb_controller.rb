@@ -851,7 +851,7 @@
 
         files.each do |file|
           # Requete 61 paid but not delivery february
-          next unless file.include?('_61') || file.include?('_63') || file.include?('_64') || file.include?('_66') || file.include?('_67')
+          next unless file.include?('_69')
           p file
           localfile = File.basename(file)
           ftp.getbinaryfile(file, localfile, @blocksize)
@@ -973,7 +973,7 @@
 
             recharge_line << lili[66] #billing_phone
 
-            if localfile.include?("_64") || localfile.include?('_67')
+            if localfile.include?("_69")
               recharge_line << 'cancelled'
             else
               recharge_line << ''
