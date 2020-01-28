@@ -45,6 +45,7 @@ require 'date'
       end
 
       all_customers.flatten.each do |customer|
+        p customer.email
         if customer.created_at.to_date < "2020-01-28T07:52:14+01:00".to_date
           if customer.state == 'disabled' and customer.email != nil
             ShopifyAPIRetry.retry { customer.send_invite }
@@ -496,9 +497,14 @@ require 'date'
         ShopifyAPI::Base.api_version = '2020-01'
       end
 
+      def private_test_api_destination
+        shop_url = "https://b5e7b69dad09183d37d1ae8a7288c9fa:84edf1954f09b9a2a45b44fab4aa459d@thomas-test-theme.myshopify.com/admin/api/2020-01/orders.json"
+        ShopifyAPI::Base.site = shop_url
+        ShopifyAPI::Base.api_version = '2020-01'
+      end
 
       def private_prod_api_destination
-        shop_url = "https://b5e7b69dad09183d37d1ae8a7288c9fa:84edf1954f09b9a2a45b44fab4aa459d@thomas-test-theme.myshopify.com/admin/api/2020-01/orders.json"
+        shop_url ='https://ea85c614cdfc2d59fe7e8d2f32d6dd54:73300234a46ab53bd6e11a7ddb5d9a55@mes-voisins-producteurs2.myshopify.com/admin/api/2020-01/orders.json'
         ShopifyAPI::Base.site = shop_url
         ShopifyAPI::Base.api_version = '2020-01'
       end
@@ -522,6 +528,7 @@ require 'date'
           p i
           order.fulfillments = []
           order.source_name = nil
+          order.sent_receipt = false
           order.line_items.each do |line_item|
             line_item.id = nil
             line_item.variant_id = nil

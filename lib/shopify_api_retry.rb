@@ -23,6 +23,7 @@ module ShopifyAPIRetry
       result = yield
     rescue ActiveResource::ClientError => e
       # Not 100% if we need to check for code method, I think I saw a NoMethodError...
+      # rescue if  e.response.code.to_i == 422
       raise unless e.response.respond_to?(:code) && e.response.code.to_i == 429
       p "credit used : #{ShopifyAPI.credit_used}"
 
