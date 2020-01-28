@@ -514,7 +514,7 @@ require 'date'
         puts "all orders first"
         puts ShopifyAPI::Base.site
 
-        two_fifty = ShopifyAPIRetry.retry { ShopifyAPI::Order.find(:all, params: {limit: 250, status: 'any'})}
+        two_fifty = ShopifyAPIRetry.retry { ShopifyAPI::Order.find(:all, params: {limit: 250, status: 'any'}).select {|o| o.number.to_i < 3547} }
         migrate(two_fifty)
 
         while two_fifty.count == 250
