@@ -46,7 +46,7 @@ require 'date'
 
       all_customers.flatten.each do |customer|
         if customer.created_at.to_date < "2020-01-28T07:52:14+01:00".to_date
-          if customer.state == 'disabled'
+          if customer.state == 'disabled' and customer.email != nil
             ShopifyAPIRetry.retry { customer.send_invite }
             p customer.email
           end
