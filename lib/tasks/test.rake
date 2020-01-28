@@ -18,7 +18,7 @@ end
 
 task mvp: :environment do
   puts 'launching console'
-  send_bulk_invite
+  mvp
   puts 'done.'
 end
 
@@ -508,17 +508,18 @@ require 'date'
         two_fifty = ShopifyAPIRetry.retry { ShopifyAPI::Order.find(:all, params: {limit: 250, status: 'any'})}
         @all_orders = two_fifty
 
-        # while two_fifty.count == 250
-        #   puts 'next page____'
-        #   sleep(0.5)
-        #   two_fifty = ShopifyAPIRetry.retry { two_fifty.fetch_next_page }
-        #   @all_orders << two_fifty
-        # end
+        while two_fifty.count == 250
+          puts 'next page____'
+          sleep(0.5)
+          two_fifty = ShopifyAPIRetry.retry { two_fifty.fetch_next_page }
+          @all_orders << two_fifty
+        end
       end
 
       def migrate
         private_prod_api_destination
-        @all_orders.flatten.first(100).each do |order|
+        @all_orders.flatten.each_with_index do |order, i|
+          p i
           order.fulfillments = []
           order.source_name = nil
           order.line_items.each do |line_item|
