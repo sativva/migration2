@@ -16,6 +16,12 @@ task bulk: :environment do
   puts 'done.'
 end
 
+task mvp: :environment do
+  puts 'launching console'
+  send_bulk_invite
+  puts 'done.'
+end
+
 
 
 require "shopify_api_retry"
@@ -39,7 +45,7 @@ require 'date'
       end
 
       all_customers.flatten.each do |customer|
-        if customer.created_at.to_date < "2020-01-14T23:52:14+01:00".to_date
+        if customer.created_at.to_date < "2020-01-28T07:52:14+01:00".to_date
           if customer.state == 'disabled'
             ShopifyAPIRetry.retry { customer.send_invite }
             p customer.email
@@ -531,6 +537,8 @@ require 'date'
           end
         end
       end
+
+      all_orders
       migrate
 
 
