@@ -511,20 +511,29 @@ require 'date'
 
       def all_orders
         private_prod_api_origin
+        puts "all orders first"
+        puts ShopifyAPI::Base.site
+
         two_fifty = ShopifyAPIRetry.retry { ShopifyAPI::Order.find(:all, params: {limit: 250, status: 'any'})}
-        @all_orders = two_fifty
+        migrate(two_fifty)
 
         while two_fifty.count == 250
-          puts 'next page____'
+          private_prod_api_origin
+          puts "all orders while"
+          puts ShopifyAPI::Base.site
+
+          puts "next page____#{two_fifty.count}"
           sleep(0.5)
           two_fifty = ShopifyAPIRetry.retry { two_fifty.fetch_next_page }
-          @all_orders << two_fifty
+          migrate(two_fifty)
         end
       end
 
-      def migrate
+      def migrate(orders)
+        puts "migrate"
+        puts ShopifyAPI::Base.site
         private_prod_api_destination
-        @all_orders.flatten.each_with_index do |order, i|
+        orders.each_with_index do |order, i|
           p i
           order.fulfillments = []
           order.source_name = nil
