@@ -470,14 +470,68 @@ require 'date'
     end
 
 
-def testi
-  Shop.all.each do |shop|
-    shop.connect_to_store
-    @products = ShopifyAPI::Product.find(:all, params: { limit: 100 })
-    @customers = ShopifyAPI::Customer.find(:all, params: { limit: 100 })
-    @orders = ShopifyAPI::Order.find(:all, params: { limit: 100 })
-    @webhooks = ShopifyAPI::Webhook.find(:all)
-    binding.pry
-  end
+    def testi
+      Shop.all.each do |shop|
+        shop.connect_to_store
+        @products = ShopifyAPI::Product.find(:all, params: { limit: 100 })
+        @customers = ShopifyAPI::Customer.find(:all, params: { limit: 100 })
+        @orders = ShopifyAPI::Order.find(:all, params: { limit: 100 })
+        @webhooks = ShopifyAPI::Webhook.find(:all)
+        binding.pry
+      end
 
-end
+    end
+
+    def mvp
+      @all_orders = []
+      def private_prod_api_origin
+        shop_url = "https://bf227c6b157c312b8466028957ca7171:f8279fc264660d34b94add101621e3d4@mes-voisins-producteurs.myshopify.com/"
+        ShopifyAPI::Base.site = shop_url
+        ShopifyAPI::Base.api_version = '2020-01'
+      end
+
+
+      def private_prod_api_destination
+        shop_url = "https://b5e7b69dad09183d37d1ae8a7288c9fa:84edf1954f09b9a2a45b44fab4aa459d@thomas-test-theme.myshopify.com/admin/api/2020-01/orders.json"
+        ShopifyAPI::Base.site = shop_url
+        ShopifyAPI::Base.api_version = '2020-01'
+      end
+
+      def all_orders
+        private_prod_api_origin
+        two_fifty = ShopifyAPIRetry.retry { ShopifyAPI::Order.find(:all, params: {limit: 250, status: 'any'})}
+        @all_orders = two_fifty
+
+        # while two_fifty.count == 250
+        #   puts 'next page____'
+        #   sleep(0.5)
+        #   two_fifty = ShopifyAPIRetry.retry { two_fifty.fetch_next_page }
+        #   @all_orders << two_fifty
+        # end
+      end
+
+      def migrate
+        private_prod_api_destination
+        @all_orders.flatten.first(100).each do |order|
+          order.fulfillments = []
+          order.source_name = nil
+          order.line_items.each do |line_item|
+            line_item.id = nil
+            line_item.variant_id = nil
+          end
+          order.id = nil
+          order.name = "#{order.name}-v1"
+          order.tax_lines = nil
+          o_new = ShopifyAPI::Order.new(order.attributes)
+          sleep(0.5)
+          if ShopifyAPIRetry.retry { o_new.save }
+            p "did it #{o_new.name}"
+          else
+            p o_new.errors.messages
+          end
+        end
+      end
+      migrate
+
+
+    end
