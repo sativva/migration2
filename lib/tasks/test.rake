@@ -531,8 +531,8 @@ require 'date'
 
       def migrate(orders)
         puts "migrate"
-        puts ShopifyAPI::Base.site
         private_prod_api_destination
+        puts ShopifyAPI::Base.site
         orders.each_with_index do |order, i|
           p i
           order.fulfillments = []
