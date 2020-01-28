@@ -463,7 +463,7 @@ require 'date'
 
     def set_session
       # @shop = Shop.where(shopify_domain: session[:shopify_domain]).first
-      @shop = Shop.last
+      @shop = Shop.where(shopify_domain: "mes-voisins-producteurs2.myshopify.com").first
       @shop.connect_to_store
       rescue
         set_session_from_params

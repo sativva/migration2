@@ -1188,7 +1188,7 @@
     end
 
     def all_orders
-      private_prod_api
+      private_prod_api_origin
       two_fifty = ShopifyAPIRetry.retry { ShopifyAPI::Order.find(:all, params: {limit: 250, status: 'any'})}
       all_orders = two_fifty
 
@@ -1201,12 +1201,18 @@
     end
 
 
-    def private_prod_api
+    def private_prod_api_origin
       shop_url = "https://bf227c6b157c312b8466028957ca7171:f8279fc264660d34b94add101621e3d4@mes-voisins-producteurs.myshopify.com/"
       ShopifyAPI::Base.site = shop_url
       ShopifyAPI::Base.api_version = '2020-01'
     end
 
+
+    def private_prod_api_destination
+      shop_url = "https://b5e7b69dad09183d37d1ae8a7288c9fa:84edf1954f09b9a2a45b44fab4aa459d@thomas-test-theme.myshopify.com/admin/api/2020-01/orders.json"
+      ShopifyAPI::Base.site = shop_url
+      ShopifyAPI::Base.api_version = '2020-01'
+    end
 
     def set_session
       @shop = Shop.where(shopify_domain: session[:shopify_domain]).first
@@ -1253,27 +1259,4 @@
 
   end
 
-  li = {
-        "title": "Red Leather Coat",
-        "price": 129.99,
-        "grams": "1700",
-        "quantity": 1
-      }
-require 'uri'
-require 'net/http'
-require 'openssl'
-require 'rubygems'
-require 'json'
-url = URI.parse('https://bf227c6b157c312b8466028957ca7171:f8279fc264660d34b94add101621e3d4@mes-voisins-producteurs.myshopify.com/admin/api/2020-01/shop.json')
-http = Net::HTTP.new(url.host, url.port)
-http.use_ssl = true
-
-request = Net::HTTP::Get.new(url)
-request["content-type"] = 'application/json'
-
-res = Net::HTTP.start(url.host, url.port) {|http|
-  http.request(request)
-}
-puts res.body
-      curl -X GET  -H 'Content-Type: application/json'
 
