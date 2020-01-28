@@ -498,13 +498,13 @@ require 'date'
       end
 
       def private_test_api_destination
-        shop_url = "https://b5e7b69dad09183d37d1ae8a7288c9fa:84edf1954f09b9a2a45b44fab4aa459d@thomas-test-theme.myshopify.com/admin/api/2020-01/orders.json"
+        shop_url = "https://b5e7b69dad09183d37d1ae8a7288c9fa:84edf1954f09b9a2a45b44fab4aa459d@thomas-test-theme.myshopify.com/"
         ShopifyAPI::Base.site = shop_url
         ShopifyAPI::Base.api_version = '2020-01'
       end
 
       def private_prod_api_destination
-        shop_url ='https://ea85c614cdfc2d59fe7e8d2f32d6dd54:73300234a46ab53bd6e11a7ddb5d9a55@mes-voisins-producteurs2.myshopify.com/admin/api/2020-01/orders.json'
+        shop_url ='https://ea85c614cdfc2d59fe7e8d2f32d6dd54:73300234a46ab53bd6e11a7ddb5d9a55@mes-voisins-producteurs2.myshopify.com/'
         ShopifyAPI::Base.site = shop_url
         ShopifyAPI::Base.api_version = '2020-01'
       end
@@ -514,7 +514,7 @@ require 'date'
         puts "all orders first"
         puts ShopifyAPI::Base.site
 
-        two_fifty = ShopifyAPIRetry.retry { ShopifyAPI::Order.find(:all, params: {limit: 250, status: 'any'}).select {|o| o.number.to_i < 3547} }
+        two_fifty = ShopifyAPIRetry.retry { ShopifyAPI::Order.find(:all, params: { limit: 250, status: 'any' }).select { |o| o.number.to_i < 3540 } }
         migrate(two_fifty)
 
         while two_fifty.count == 250
@@ -539,6 +539,7 @@ require 'date'
           order.source_name = nil
           order.sent_receipt = false
           order.line_items.each do |line_item|
+            sleep(0.01)
             line_item.id = nil
             line_item.variant_id = nil
           end
