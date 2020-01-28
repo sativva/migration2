@@ -557,7 +557,7 @@ require 'date'
       end
 
       all_orders
-      migrate
+
 
 
     end
