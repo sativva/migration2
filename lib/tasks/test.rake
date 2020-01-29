@@ -549,6 +549,13 @@ require 'date'
           order.name = "#{order.name}-v1"
           order.tax_lines = nil
           order.customer = nil
+          if order.payment_details
+          else
+            order.payment_details = nil
+          end
+
+
+
           # exists?
           exists = ShopifyAPIRetry.retry { ShopifyAPI::Order.find(:all, params: {status: 'any', name: order.name}) }
           if exists.length == 0
