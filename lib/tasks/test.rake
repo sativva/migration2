@@ -534,9 +534,9 @@ require 'date'
         private_prod_api_destination
         puts ShopifyAPI::Base.site
         orders.each_with_index do |order, i|
-
-          next if order.email = "jeremieguilbert@gmail.com"
-          next if order.email = "vivierjulie@orange.fr"
+          p "processing #{order.name}"
+          next if order.email == "jeremieguilbert@gmail.com"
+          next if order.email == "vivierjulie@orange.fr"
           p i
           order.fulfillments = []
           order.source_name = nil
@@ -550,14 +550,58 @@ require 'date'
           order.name = "#{order.name}-v1"
           order.tax_lines = nil
           order.customer = nil
+          # exists?
+          exists = ShopifyAPIRetry.retry { ShopifyAPI::Order.find(:all, params: {status: 'any', name: order.name}) }
+          if exists.length == 0
+            o_new =  ShopifyAPI::Order.new({
+              line_items: order.line_items,
+              email: order.email,
+              created_at: order.created_at,
+              total_price: order.total_price,
+              subtotal_price: order.subtotal_price,
+              name: order.name,
+              sent_receipt: false,
+              note: order.note,
+              token: order.token,
+              gateway: order.gateway,
+              total_weight: order.total_weight,
+              total_tax: order.total_tax,
+              taxes_included: order.taxes_included,
+              currency: order.currency,
+              financial_status: order.financial_status,
+              confirmed: order.confirmed,
+              total_discounts: order.total_discounts,
+              total_line_items_price: order.total_line_items_price,
+              cart_token: order.cart_token,
+              buyer_accepts_marketing: order.buyer_accepts_marketing,
+              referring_site: order.referring_site,
+              landing_site: order.landing_site,
+              cancelled_at: order.cancelled_at,
+              cancel_reason: order.cancel_reason,
+              total_price_usd: order.total_price_usd,
+              checkout_token: order.checkout_token,
 
-          o_new = ShopifyAPI::Order.new(order.attributes)
-          sleep(0.5)
-          if ShopifyAPIRetry.retry { o_new.save }
-            p "did it #{o_new.name}"
-          else
-            p o_new.errors.messages
+              discount_applications: order.discount_applications,
+              discount_codes: order.discount_codes,
+              note_attributes: order.note_attributes,
+              payment_gateway_names: order.payment_gateway_names,
+              processing_method: order.processing_method,
+
+              payment_details: order.payment_details,
+              billing_address: order.billing_address,
+              shipping_address: order.shipping_address,
+              shipping_lines: order.shipping_lines
+
+
+            })
+            sleep(0.5)
+            if ShopifyAPIRetry.retry { o_new.save }
+              p "did it #{o_new.name}"
+            else
+              p o_new.errors.messages
+            end
           end
+
         end
       end
 
