@@ -525,7 +525,7 @@ require 'date'
           puts "next page____#{two_fifty.count}"
           sleep(0.5)
           two_fifty = ShopifyAPIRetry.retry { two_fifty.fetch_next_page }
-          migrate(two_fifty.select { |o| o.number.to_i < 3394 })
+          migrate(two_fifty.select { |o| o.number.to_i < 3367 })
         end
       end
 
@@ -534,6 +534,7 @@ require 'date'
         private_prod_api_destination
         puts ShopifyAPI::Base.site
         orders.each_with_index do |order, i|
+          email = order.customer.email
           p i
           order.fulfillments = []
           order.source_name = nil
@@ -546,6 +547,8 @@ require 'date'
           order.id = nil
           order.name = "#{order.name}-v1"
           order.tax_lines = nil
+          order.customer = nil
+          order.customer = {email: email}
           o_new = ShopifyAPI::Order.new(order.attributes)
           sleep(0.5)
           if ShopifyAPIRetry.retry { o_new.save }
@@ -558,6 +561,6 @@ require 'date'
 
       all_orders
 
-# 4403; 4547 4394
+# 4403; 4547 4394 4367
 
     end
