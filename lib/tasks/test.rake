@@ -549,11 +549,6 @@ require 'date'
           order.name = "#{order.name}-v1"
           order.tax_lines = nil
           order.customer = nil
-          if order.payment_details
-          else
-            order.payment_details = nil
-          end
-
 
 
           # exists?
@@ -593,7 +588,6 @@ require 'date'
               payment_gateway_names: order.payment_gateway_names,
               processing_method: order.processing_method,
 
-              payment_details: order.payment_details,
               billing_address: order.billing_address,
               shipping_address: order.shipping_address,
               shipping_lines: order.shipping_lines
