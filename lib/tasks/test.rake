@@ -525,7 +525,7 @@ require 'date'
           puts "next page____#{two_fifty.count}"
           sleep(0.5)
           two_fifty = ShopifyAPIRetry.retry { two_fifty.fetch_next_page }
-          migrate(two_fifty.select { |o| o.number.to_i < 3540 })
+          migrate(two_fifty.select { |o| o.number.to_i < 3403 })
         end
       end
 
@@ -558,6 +558,6 @@ require 'date'
 
       all_orders
 
-
+# 4403; 4547
 
     end
