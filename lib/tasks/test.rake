@@ -535,8 +535,7 @@ require 'date'
         puts ShopifyAPI::Base.site
         orders.each_with_index do |order, i|
           p "processing #{order.name}"
-          next if order.email == "jeremieguilbert@gmail.com"
-          next if order.email == "vivierjulie@orange.fr"
+
           p i
           order.fulfillments = []
           order.source_name = nil
