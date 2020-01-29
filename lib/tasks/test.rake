@@ -535,6 +535,8 @@ require 'date'
         puts ShopifyAPI::Base.site
         orders.each_with_index do |order, i|
           email = order.customer.email
+          next if email = "jeremieguilbert@gmail.com"
+          next if email = "vivierjulie@orange.fr"
           p i
           order.fulfillments = []
           order.source_name = nil
