@@ -534,9 +534,9 @@ require 'date'
         private_prod_api_destination
         puts ShopifyAPI::Base.site
         orders.each_with_index do |order, i|
-          email = order.customer.email
-          next if email = "jeremieguilbert@gmail.com"
-          next if email = "vivierjulie@orange.fr"
+
+          next if order.email = "jeremieguilbert@gmail.com"
+          next if order.email = "vivierjulie@orange.fr"
           p i
           order.fulfillments = []
           order.source_name = nil
@@ -550,7 +550,7 @@ require 'date'
           order.name = "#{order.name}-v1"
           order.tax_lines = nil
           order.customer = nil
-          order.customer = {email: email}
+
           o_new = ShopifyAPI::Order.new(order.attributes)
           sleep(0.5)
           if ShopifyAPIRetry.retry { o_new.save }

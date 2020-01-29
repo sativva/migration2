@@ -24,13 +24,18 @@ module ShopifyAPIRetry
     rescue ActiveResource::ClientError => e
       # Not 100% if we need to check for code method, I think I saw a NoMethodError...
       # rescue if  e.response.code.to_i == 422
-      raise unless e.response.respond_to?(:code) && e.response.code.to_i == 429
-      p "credit used : #{ShopifyAPI.credit_used}"
+      # if e.response.respond_to?(:code) && e.response.code.to_i == 400
+      #   rescue
+      # else
 
-      seconds_to_wait = (e.response[HTTP_RETRY_AFTER] || 10).to_i unless seconds_to_wait
-      sleep 10
+        raise unless e.response.respond_to?(:code) && e.response.code.to_i == 429
+        p "credit used : #{ShopifyAPI.credit_used}"
 
-      retry
+        seconds_to_wait = (e.response[HTTP_RETRY_AFTER] || 10).to_i unless seconds_to_wait
+        sleep 10
+
+        retry
+      # end
     end
 
     result
