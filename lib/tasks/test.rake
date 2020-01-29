@@ -514,8 +514,8 @@ require 'date'
         puts "all orders first"
         puts ShopifyAPI::Base.site
 
-        two_fifty = ShopifyAPIRetry.retry { ShopifyAPI::Order.find(:all, params: { limit: 250, status: 'any' }).select { |o| o.number.to_i < 3540 } }
-        migrate(two_fifty)
+        two_fifty = ShopifyAPIRetry.retry { ShopifyAPI::Order.find(:all, params: { limit: 250, status: 'any' }) }
+        migrate(two_fifty.select { |o| o.number.to_i < 3540 })
 
         while two_fifty.count == 250
           private_prod_api_origin
@@ -525,7 +525,7 @@ require 'date'
           puts "next page____#{two_fifty.count}"
           sleep(0.5)
           two_fifty = ShopifyAPIRetry.retry { two_fifty.fetch_next_page }
-          migrate(two_fifty)
+          migrate(two_fifty.select { |o| o.number.to_i < 3540 })
         end
       end
 
