@@ -24,6 +24,12 @@ end
 
 
 
+task mvp: :environment do
+  puts 'launching console'
+  smoon
+  puts 'done.'
+end
+
 require "shopify_api_retry"
 require 'faker'
 require 'nokogiri'
@@ -491,8 +497,10 @@ require 'date'
 
     def mvp
       @all_orders = []
+      problems = []
       def private_prod_api_origin
         shop_url = "https://bf227c6b157c312b8466028957ca7171:f8279fc264660d34b94add101621e3d4@mes-voisins-producteurs.myshopify.com/"
+        # shop_url = "https://bf227c6b157c312b8466028957ca7171:f8279fc264660d34b94add101621e3d4@mes-voisins-producteurs.myshopify.com/"
         ShopifyAPI::Base.site = shop_url
         ShopifyAPI::Base.api_version = '2020-01'
       end
@@ -525,88 +533,377 @@ require 'date'
           puts "next page____#{two_fifty.count}"
           sleep(0.5)
           two_fifty = ShopifyAPIRetry.retry { two_fifty.fetch_next_page }
-          migrate(two_fifty.select { |o| o.number.to_i < 3367 })
+          migrate(two_fifty.select { |o| o.number.to_i < 3119 })
         end
       end
 
+      def method_name
+        orders = []
+        of.each do |n|
+          orders << ShopifyAPIRetry.retry { ShopifyAPI::Order.find(:all, params: {status: 'any', name: n}) }.first
+        end
+
+      end
+
+      def migrate_discount
+        private_prod_api_origin
+        discounts = []
+        pr = ShopifyAPIRetry.retry { ShopifyAPI::PriceRule.find(:all, params: {limit: 250}) }
+        newp = pr.select do |kk|
+          if kk.attributes.has_key? ('ends_at') and kk.ends_at.present?
+            p kk.ends_at
+            kk.ends_at.to_date < Date.today
+          end
+        end
+        migrate_discounts(newp)
+        while pr.count == 250
+          private_prod_api_origin
+          puts "all discount while"
+          puts ShopifyAPI::Base.site
+          puts "next page____#{pr.count}"
+          sleep(0.5)
+          pr = ShopifyAPIRetry.retry { pr.fetch_next_page }
+          migrate_discounts(pr)
+        end
+      end
+
+      def migrate_discounts(pr)
+
+        p 'hooo'
+        pr.each do |ppr|
+          poper = ppr.id
+          piper = ppr
+
+          piper.id = nil
+          pppr = ShopifyAPI::PriceRule.new(piper.attributes)
+
+          private_prod_api_destination
+          p 'hii'
+          if ShopifyAPIRetry.retry { pppr.save }
+            piper.id = poper
+            p 'HOHO'
+            private_prod_api_origin
+            piper.discount_codes.select {|pr| pr.created_at.to_date < "2020-01-29T19:45:02+01:00".to_date }.each do |dd|
+              p pppr.id
+              dd.id = nil
+              dd.prefix_options = {price_rule_id: pppr.id}
+              dd.price_rule_id = pppr.id
+              private_prod_api_destination
+              if ShopifyAPIRetry.retry { dd.save }
+                p 'youpi'
+                p dd.code
+              end
+            end
+          end
+        end
+
+      end
+
       def migrate(orders)
-        puts "migrate"
+              puts "migrate"
         private_prod_api_destination
         puts ShopifyAPI::Base.site
         orders.each_with_index do |order, i|
           p "processing #{order.name}"
 
           p i
-          order.fulfillments = []
-          order.source_name = nil
-          order.sent_receipt = false
+
           order.line_items.each do |line_item|
             sleep(0.01)
             line_item.id = nil
+            line_item.product_id = nil
             line_item.variant_id = nil
+            line_item.origin_location = nil
+            line_item.admin_graphql_api_id = nil
           end
-          order.id = nil
-          order.name = "#{order.name}-v1"
-          order.tax_lines = nil
-          order.customer = nil
+          # {
+          #   line_items: order.line_items,
+          #   email: order.email,
+          #   created_at: order.created_at,
+          #   note: order.note,
+          #   gateway: order.gateway,
+          #   total_price: order.total_price,
+          #   subtotal_price: order.subtotal_price,
+          #   total_weight: order.total_weight,
+          #   financial_status: order.financial_status,
+          #   total_line_items_price: order.total_line_items_price,
+          #   name: "#{order.name}-v1",
+          #   cancelled_at: order.cancelled_at,
+          #   note_attributes: order.note_attributes,
+          #   discount_codes: order.discount_codes,
+          #   fulfillment_status: order.fulfillment_status,
+          #   shipping_lines: order.shipping_lines,
+          #   shipping_address: order.shipping_address
+          # }
+          # order.fulfillments = nil
+          # order.source_name = nil
+          # order.sent_receipt = false
+          # order.id = nil
+          # order.name = "#{order.name}-v1"
+          # order.tax_lines = nil
+          # order.customer = nil
 
-
+          unless order.shipping_lines.empty?
+            order.shipping_lines.each {|sl| sl.id = nil }
+          end
+          # ShopifyAPI::Order.create(order.attributes)
           # exists?
           exists = ShopifyAPIRetry.retry { ShopifyAPI::Order.find(:all, params: {status: 'any', name: order.name}) }
           if exists.length == 0
-            o_new =  ShopifyAPI::Order.new({
-              line_items: order.line_items,
-              email: order.email,
-              created_at: order.created_at,
-              total_price: order.total_price,
-              subtotal_price: order.subtotal_price,
-              name: order.name,
-              sent_receipt: false,
-              note: order.note,
-              token: order.token,
-              gateway: order.gateway,
-              total_weight: order.total_weight,
-              total_tax: order.total_tax,
-              taxes_included: order.taxes_included,
-              currency: order.currency,
-              financial_status: order.financial_status,
-              confirmed: order.confirmed,
-              total_discounts: order.total_discounts,
-              total_line_items_price: order.total_line_items_price,
-              cart_token: order.cart_token,
-              buyer_accepts_marketing: order.buyer_accepts_marketing,
-              referring_site: order.referring_site,
-              landing_site: order.landing_site,
-              cancelled_at: order.cancelled_at,
-              cancel_reason: order.cancel_reason,
-              total_price_usd: order.total_price_usd,
-              checkout_token: order.checkout_token,
-
-              discount_applications: order.discount_applications,
-              discount_codes: order.discount_codes,
-              note_attributes: order.note_attributes,
-              payment_gateway_names: order.payment_gateway_names,
-              processing_method: order.processing_method,
-
-              billing_address: order.billing_address,
-              shipping_address: order.shipping_address,
-              shipping_lines: order.shipping_lines
+            o_new = ShopifyAPI::Order.new({
+            line_items: order.line_items,
+            email: order.email,
+            created_at: order.created_at,
+            note: order.note,
+            gateway: order.gateway,
+            total_price: order.total_price,
+            subtotal_price: order.subtotal_price,
+            total_weight: order.total_weight,
+            financial_status: order.financial_status,
+            total_line_items_price: order.total_line_items_price,
+            name: "#{order.name}-v1",
+            cancelled_at: order.cancelled_at,
+            note_attributes: order.note_attributes,
+            discount_codes: order.discount_codes,
+            fulfillment_status: order.fulfillment_status,
+            shipping_lines: order.shipping_lines
 
 
-            })
+          })
+            if order.attributes.has_key? ('shipping_address')
+              o_new.shipping_address = order.shipping_address
+            end
             sleep(0.5)
-            if ShopifyAPIRetry.retry { o_new.save }
-              p "did it #{o_new.name}"
-            else
-              p o_new.errors.messages
+            begin
+              if ShopifyAPIRetry.retry { o_new.save }
+                p "did it #{o_new.name}"
+              else
+                p o_new.errors.messages
+              end
+            rescue
+              p @problems << o_new.name
             end
           end
 
         end
-      end
 
       all_orders
 
-# 4403; 4547 4394 4367
-
+of = ["#4403",
+ "#4547",
+ "#4394",
+ "#4367",
+ "#4315",
+ "#4118",
+ "#4080",
+ "#3530",
+ "#3490",
+ "#3482",
+ "#3055",
+ "#3046",
+ "#3039",
+ "#2939",
+ "#2839",
+ "#2838",
+ "#2837",
+ "#2836",
+ "#2588",
+ "#2583",
+ "#2577",
+ "#2570",
+ "#2547",
+ "#2483",
+ "#2481",
+ "#2479",
+ "#2475",
+ "#2445",
+ "#2444",
+ "#2442",
+ "#2429",
+ "#2406",
+ "#2405",
+ "#2402",
+ "#2375",
+ "#2306",
+ "#2300",
+ "#2294",
+ "#2289",
+ "#2288",
+ "#2286",
+ "#2267",
+ "#2262",
+ "#2223",
+ "#2219",
+ "#2217",
+ "#2213",
+ "#2185",
+ "#2184",
+ "#2182",
+ "#2181",
+ "#2180",
+ "#2178",
+ "#2176",
+ "#2175",
+ "#2173",
+ "#2111",
+ "#2070",
+ "#2058",
+ "#2055",
+ "#2050",
+ "#2046",
+ "#2041",
+ "#2040",
+ "#2009",
+ "#1959",
+ "#1855",
+ "#1614",
+ "#1593",
+ "#1568",
+ "#1500",
+ "#1491",
+ "#1-1009",
+ "#1470",
+ "#1443",
+ "#1440",
+ "#1409",
+ "#1-1008",
+ "#1-1007",
+ "#1-1006",
+ "#1251",
+ "#1-1004",
+ "#1-1003",
+ "#1120",
+ "#1079",
+ "#1078",
+ "#1-1002",
+ "#1048",
+ "#1042",
+ "#1-1001",
+ "#4790",
+ "#4789",
+ "#4788",
+ "#4787",
+ "#4786",
+ "#4785",
+ "#4784",
+ "#4783",
+ "#4782",
+ "#4781",
+ "#4780",
+ "#4779",
+ "#4778",
+ "#4777",
+ "#4776",
+ "#4775",
+ "#4774",
+ "#4773",
+ "#4772",
+ "#4771",
+ "#4770",
+ "#4769",
+ "#4768",
+ "#4767",
+ "#4766",
+ "#4765",
+ "#4764",
+ "#4763",
+ "#4762",
+ "#4761",
+ "#4760",
+ "#4759",
+ "#4758",
+ "#4757",
+ "#4756",
+ "#4755",
+ "#4754",
+ "#4753",
+ "#4752",
+ "#4751",
+ "#4750",
+ "#4749",
+ "#4748",
+ "#4747",
+ "#4746",
+ "#4745",
+ "#4744",
+ "#4743",
+ "#4742",
+ "#4741"]
     end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    def smoon_blog
+      shop_url = "https://0250beef1e5eb99b14dc71f48ec038bc:bfb9ba6923b3202eda355a207959ba59@smoonlingerie.myshopify.com/"
+      ShopifyAPI::Base.site = shop_url
+      ShopifyAPI::Base.api_version = '2020-01'
+      set_FTP_settings
+      ftp = Net::FTP.new(@hostname)
+      ftp.login(user = @username, passwd = @password, acct = nil)
+      ftp.chdir("#{@folder}")
+      files = ftp.nlst('*.xml')
+
+      file = files.first
+      localfile = File.basename(file)
+      xml_string = ftp.getbinaryfile(file, localfile, @blocksize)
+      doc = File.open(file) { |f| Nokogiri::XML(f) }
+      @item = doc.xpath("/rss/channel/item")
+      @item.each_with_index do |node, i|
+
+        @type = node.xpath("./wp:post_type").text
+        if @type == "post"
+          if @item[i+1].xpath("./wp:post_type").text == "attachment"
+            image =  @item[i+1].xpath("./link").text
+          end
+
+          status = node.xpath("./wp:status").text
+          title = node.xpath("./title").text
+          created_at = node.xpath("./pubDate").text
+          author = node.xpath("./dc:creator").text
+          content = node.xpath("./content:encoded").text
+          excerpt = node.xpath("./excerpt:encoded").text
+
+          excerpt.gsub('<![CDATA[', '')
+          content.gsub('<![CDATA[', '')
+          excerpt.gsub('<![CDATA[', '')
+          content.gsub('<![CDATA[', '')
+          article  = ShopifyAPI::Article.new({
+            "title": title,
+            "author": author,
+            "tags": "",
+            "body_html": content,
+            "published_at": created_at,
+            "summary_html": excerpt,
+            "image": {
+              "src": image,
+              "alt": title
+            }
+          })
+
+          ShopifyAPIRetry.retry { article.save }
+            # node.xpath("./item/").text
+
+        end
+      end
+    end
+
+
+end
