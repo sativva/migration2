@@ -86,6 +86,7 @@ require 'date'
           else
             p cus.email
             p cus.errors.messages
+            errors << { email:cus.email, error: cus.errors.messages  }
             p "errors"
           end
         end
