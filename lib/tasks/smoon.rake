@@ -31,7 +31,7 @@ require 'date'
         localfile = File.basename(file)
         ftp.getbinaryfile(file, localfile, @blocksize)
         csv = CSV.open(localfile, headers: false,liberal_parsing: true)
-        csv.first(22).each_with_index do |line, i|
+        csv.each_with_index do |line, i|
           sleep(0.5)
           p 'csveach'
           next if i == 0
@@ -50,7 +50,8 @@ require 'date'
           city = lili[12]
           province = lili[13]
           phone = lili[16].present? ? lili[16].gsub('-', '').gsub(/\./, '').gsub(/\//, '')  : ""
-          country =  pays(lili[15])
+          phone = phone.include?('(') ? "" : phone
+           country =  pays(lili[15])
           country_code =  code_pays(lili[15])
           created_at = lili[8].present? ? DateTime.parse(lili[8]) : nil
           tags =  lili[0] == 'true' ? "has_account" : ""
