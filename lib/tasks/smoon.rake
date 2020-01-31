@@ -1,5 +1,4 @@
 namespace :smoon do
-
   desc "Import Customer"
   task customer: :environment do
     puts 'smoon'
@@ -7,9 +6,11 @@ namespace :smoon do
   end
 
   desc "TODO"
-  task order: :environment do
+  task send_email: :environment do
+    send_email
   end
 end
+
 
 require "shopify_api_retry"
 require 'faker'
@@ -87,6 +88,42 @@ require 'date'
             p cus.email
             p cus.errors.messages
             errors << { email:cus.email, error: cus.errors.messages  }
+            if cus.errors.messages.include?(':phone=>["is invalid"]')
+              cus.tags = "#{cus.tags}, invalid_phone, phone|#{cus.phone}"
+              cus.phone = nil
+              cus.addresses[0].phone = nil
+              if cus.save
+                p cus.email
+                p "done"
+              else
+                p cus.email
+                p cus.errors.messages
+              end
+            elsif cus.errors.messages.include?(':email=>["contains an invalid domain name"]')
+              cus.tags = "#{cus.tags}, invalid_email, email|#{cus.email}"
+              cus.email = cus.em
+              if cus.phone.present && cus.save
+                p cus.phone
+                p "done"
+              else
+                p cus.phone
+                p cus.errors.messages
+              end
+            elsif cus.errors.messages.include?(':phone=>["has already been taken"]')
+              cus.tags = "#{cus.tags}, already_phone, phone|#{cus.phone}"
+              cus.phone = nil
+              cus.addresses[0].phone = nil
+
+              if cus.email.present && cus.save
+                p cus.email
+                p "done"
+              else
+                p cus.email
+                p cus.errors.messages
+              end
+            else
+                p cus.email
+            end
             p "errors"
           end
         end
@@ -226,5 +263,10 @@ require 'date'
       @hostname  = 'ftp.cluster020.hosting.ovh.net'
       @password  = 'Street75'
       @folder = 'migration-shopify'
+    end
+
+    def send_email
+      p '??'
+      ErrorMailer.welcome_email.deliver
     end
 

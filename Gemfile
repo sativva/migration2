@@ -24,6 +24,7 @@ gem 'unidecoder'
 gem 'savon'
 gem 'sprockets', '~> 3.0'
 gem 'faker', :git => 'https://github.com/faker-ruby/faker.git', :branch => 'master'
+gem 'letter_opener', group: :development
 
 
 group :development do
@@ -37,7 +38,5 @@ group :development, :test do
   gem 'spring'
   gem 'spring-watcher-listen', '~> 2.0.0'
   gem 'dotenv-rails'
-  gem 'letter_opener', group: :development
 end
 
-gem 'dotenv-rails', group: [:test, :development]
