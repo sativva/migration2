@@ -32,16 +32,17 @@ require 'date'
         localfile = File.basename(file)
         ftp.getbinaryfile(file, localfile, @blocksize)
         csv = CSV.open(localfile, headers: false,liberal_parsing: true)
-        csv.each_with_index do |line, i|
+        csv.drop(339).each_with_index do |line, i|
           sleep(0.5)
           p 'csveach'
           next if i == 0
           lili = line.join(';').to_s.gsub(/\"/, "").split(';')
+          p i
 
 
           first_name = lili[1].present? ? lili[1].gsub(/,/,'') : ""
           last_name = lili[2].present? ? lili[2].gsub(/\,/,'') : ""
-          email = lili[3]
+          p email = lili[3]
           a_name = lili[9]
 
 
@@ -56,7 +57,7 @@ require 'date'
           country_code =  code_pays(lili[15])
           created_at = lili[8].present? ? DateTime.parse(lili[8]) : nil
           tags =  lili[0] == 'true' ? "has_account" : ""
-          p cust = ShopifyAPIRetry.retry { ShopifyAPI::Customer.find(:all, params: { email: email })}
+          cust = ShopifyAPIRetry.retry { ShopifyAPI::Customer.find(:all, params: { email: email })}
           next if cust.present?
           customer = {
             email: email,
@@ -80,15 +81,15 @@ require 'date'
             ],
             send_email_invite: false
           }
-          p cus = ShopifyAPI::Customer.new(customer)
+          cus = ShopifyAPI::Customer.new(customer)
           if ShopifyAPIRetry.retry { cus.save }
             p cus.email
             p "done"
           else
             p cus.email
-            p cus.errors.messages
-            errors << { email:cus.email, error: cus.errors.messages  }
-            if cus.errors.messages.include?(':phone=>["is invalid"]')
+            p cus.errors.messages.to_s
+            # {:phone=>[\"is invalid\"]}
+            if cus.errors.messages.to_s.include?('is invalid')
               cus.tags = "#{cus.tags}, invalid_phone, phone|#{cus.phone}"
               cus.phone = nil
               cus.addresses[0].phone = nil
@@ -98,33 +99,42 @@ require 'date'
               else
                 p cus.email
                 p cus.errors.messages
+                ErrorMailer.with(customer: cus).welcome_email.deliver
+
               end
-            elsif cus.errors.messages.include?(':email=>["contains an invalid domain name"]')
+              # :email=>["contains an invalid domain name"]
+            elsif cus.errors.messages.to_s.include?('contains an invalid domain name')
               cus.tags = "#{cus.tags}, invalid_email, email|#{cus.email}"
-              cus.email = cus.em
-              if cus.phone.present && cus.save
+              cus.email = nil
+              if cus.phone.present? && cus.save
                 p cus.phone
                 p "done"
               else
                 p cus.phone
                 p cus.errors.messages
+                ErrorMailer.with(customer: cus).welcome_email.deliver
               end
-            elsif cus.errors.messages.include?(':phone=>["has already been taken"]')
+              # :phone=>["has already been taken"]
+            elsif cus.errors.messages.to_s.include?('has already been taken')
               cus.tags = "#{cus.tags}, already_phone, phone|#{cus.phone}"
               cus.phone = nil
               cus.addresses[0].phone = nil
 
-              if cus.email.present && cus.save
+              if cus.email.present? && cus.save
                 p cus.email
                 p "done"
               else
                 p cus.email
                 p cus.errors.messages
+                ErrorMailer.with(customer: cus).welcome_email.deliver
+
               end
             else
                 p cus.email
+                ErrorMailer.with(customer: cus).welcome_email.deliver
+
             end
-            p "errors"
+
           end
         end
       end

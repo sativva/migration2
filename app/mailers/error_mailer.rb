@@ -2,10 +2,12 @@ class ErrorMailer < ApplicationMailer
 
 
   def welcome_email
-    # @error = params[:error]
+    @customer = params[:customer]
+    @errors = @customer.errors.messages
+
     # p params[:error]
     p "??"
-    mail(to: 'th.rondio@gmail.com', subject: 'Error')
+    mail(to: 'th.rondio@gmail.com', subject: "Error - #{@customer.email}")
 
   end
 end

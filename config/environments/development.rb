@@ -2,7 +2,7 @@ Rails.application.configure do
 
   config.hosts = (config.hosts rescue []) << /\h+.ngrok.io/
   config.hosts << 'localhost:3000'
-  config.action_mailer.default_url_options = { host: ENV["ROOT_URL"] }
+  # config.action_mailer.default_url_options = { host: ENV["ROOT_URL"] }
   # Settings specified here will take precedence over those in config/application.rb.
 
   # In the development environment your application's code is reloaded on
@@ -35,12 +35,49 @@ Rails.application.configure do
   # Store uploaded files on the local file system (see config/storage.yml for options).
   config.active_storage.service = :local
 
-  # Don't care if the mailer can't send.
-  config.action_mailer.raise_delivery_errors = true
+  ##### LETTER OPENER WORKING #####
+    # config.action_mailer.delivery_method = :letter_opener
+    # config.action_mailer.perform_deliveries = true
+    # config.action_mailer.raise_delivery_errors = true
+  ##### LETTER OPENER WORKING #####
 
-  config.action_mailer.perform_caching = true
-  config.action_mailer.delivery_method = :letter_opener
+  ##### SMTP GMAIL WIP #####
+  config.action_mailer.delivery_method = :smtp
   config.action_mailer.perform_deliveries = true
+  config.action_mailer.raise_delivery_errors = true
+  config.action_mailer.smtp_settings = {
+    address: "smtp.gmail.com",
+    port: 587,
+    domain: 'gmail.com',
+    user_name: "th.rondio@gmail.com",
+    password: "yakevejvvbdexfuh",
+    authentication: "plain",
+    enable_starttls_auto: true
+  }
+  ##### SMTP GMAIL WIP #####
+
+
+
+  # Don't care if the mailer can't send.
+  # config.action_mailer.raise_delivery_errors = true
+  # config.action_mailer.perform_caching = true
+  # config.action_mailer.delivery_method = :smtp
+  # config.action_mailer.perform_deliveries = true
+
+# host = 'localhost:3000'
+
+# config.action_mailer.smtp_settings = {
+#   address: "smtp.gmail.com",
+#   port: 587,
+#   domain: 'gmail.com',
+#   user_name: "th.rondio@gmail.com",
+#   password: "yakevejvvbdexfuh",
+#   authentication: :plain,
+#   openssl_verify_mode: :none,
+#   enable_starttls_auto: true
+# }
+# config.action_mailer.default_url_options = { :host => 'localhost:3000', protocol: 'http' }
+
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
 
